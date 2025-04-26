@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import Header from '@/components/Header';
@@ -8,6 +9,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useBessSize } from '@/hooks/useBessSize';
+import { useBessSimulation } from '@/hooks/useBessSimulation';
 import { toast } from "sonner";
 import { simuladorFormSchema, type SimuladorFormValues } from '@/schemas/simuladorSchema';
 import { ProjectInfo } from '@/components/simulador/ProjectInfo';
@@ -17,9 +19,33 @@ import { TariffSection } from '@/components/simulador/TariffSection';
 import { DieselSection } from '@/components/simulador/DieselSection';
 import { FinancialSection } from '@/components/simulador/FinancialSection';
 import { ControlStrategies } from '@/components/simulador/ControlStrategies';
+import { Loader2, ChevronRight } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+
+interface SimulationResults {
+  technical_summary?: {
+    bess_cycles_estimated: number;
+    annual_energy_throughput_mwh: number;
+    annual_solar_curtailment_mwh: number;
+  };
+  financial_summary?: {
+    annual_cost_base_case_r: number;
+    annual_cost_with_bess_r: number;
+    annual_gross_savings_r: number;
+    npv_r: number;
+    irr_percent: number;
+    payback_discounted_years: number;
+    cash_flow_r: number[];
+  };
+}
 
 const SimuladorPage = () => {
   const { calculateBessSize } = useBessSize();
+  const { simulateBess } = useBessSimulation();
+  const [activeTab, setActiveTab] = useState("dados");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<SimulationResults>({});
+  
   const form = useForm<SimuladorFormValues>({
     resolver: zodResolver(simuladorFormSchema),
     defaultValues: {
@@ -62,6 +88,9 @@ const SimuladorPage = () => {
   
   const onSubmit = async (values: SimuladorFormValues) => {
     try {
+      setIsProcessing(true);
+      
+      // Step 1: Calculate the BESS size
       const load_profile = [50, 45, 40, 40, 45, 55, 70, 80, 90, 100, 110, 115, 110, 105, 100, 100, 110, 150, 160, 140, 120, 100, 80, 60];
       
       const sizingResult = await calculateBessSize({
@@ -95,12 +124,21 @@ const SimuladorPage = () => {
         description: `Potência: ${sizingResult.calculated_power_kw} kW, Capacidade: ${sizingResult.calculated_energy_kwh} kWh`
       });
       
-      console.log(values);
+      // Step 2: Run the full simulation
+      const results = await simulateBess(values);
+      setSimulationResults(results);
+      
+      // Move to the analysis tab
+      setActiveTab("analise");
+      
+      console.log("Simulation results:", results);
     } catch (error) {
-      console.error('Error calculating BESS size:', error);
-      toast.error("Erro ao dimensionar BESS", {
+      console.error('Error in simulation process:', error);
+      toast.error("Erro no processo de simulação", {
         description: "Tente novamente ou ajuste os parâmetros"
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -113,7 +151,7 @@ const SimuladorPage = () => {
           <p className="text-gray-600">Configure e execute simulações de sistemas de armazenamento de energia por bateria.</p>
         </div>
         
-        <Tabs defaultValue="dados" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="dados">Entrada de Dados</TabsTrigger>
             <TabsTrigger value="analise">Análise & Dimensionamento</TabsTrigger>
@@ -158,7 +196,19 @@ const SimuladorPage = () => {
                     <ControlStrategies form={form} />
                     
                     <div className="flex justify-end pt-4">
-                      <Button type="submit">Avançar para Análise</Button>
+                      <Button type="submit" disabled={isProcessing}>
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processando
+                          </>
+                        ) : (
+                          <>
+                            Avançar para Análise
+                            <ChevronRight className="ml-2 h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </form>
                 </Form>
@@ -174,11 +224,112 @@ const SimuladorPage = () => {
                   Processamento e análise técnico-financeira baseada nos dados fornecidos.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-center text-gray-500 py-12">
-                  Funcionalidade em desenvolvimento. Esta seção exibirá o progresso do processamento dos dados, 
-                  dimensionamento do sistema e simulação temporal da operação.
-                </p>
+              <CardContent>
+                {isProcessing ? (
+                  <div className="py-12 space-y-6 text-center">
+                    <Loader2 className="mx-auto h-12 w-12 animate-spin text-evolight-navy" />
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-medium">Simulação em andamento</h3>
+                      <p className="text-gray-500">Calculando parâmetros técnicos e financeiros...</p>
+                      <Progress value={65} className="w-2/3 mx-auto" />
+                    </div>
+                  </div>
+                ) : Object.keys(simulationResults).length > 0 ? (
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-lg font-bold mb-4">Resumo Técnico</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Ciclos Estimados/Ano</p>
+                            <p className="text-2xl font-bold">{simulationResults.technical_summary?.bess_cycles_estimated}</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Energia Movimentada (MWh/ano)</p>
+                            <p className="text-2xl font-bold">
+                              {simulationResults.technical_summary?.annual_energy_throughput_mwh.toFixed(1)}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Curtailment Solar (MWh/ano)</p>
+                            <p className="text-2xl font-bold">
+                              {simulationResults.technical_summary?.annual_solar_curtailment_mwh.toFixed(1)}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-bold mb-4">Resumo Financeiro</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Valor Presente Líquido</p>
+                            <p className="text-2xl font-bold text-emerald-600">
+                              R$ {simulationResults.financial_summary?.npv_r.toLocaleString('pt-BR')}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Taxa Interna de Retorno</p>
+                            <p className="text-2xl font-bold text-emerald-600">
+                              {simulationResults.financial_summary?.irr_percent.toFixed(1)}%
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Payback Descontado</p>
+                            <p className="text-2xl font-bold">
+                              {simulationResults.financial_summary?.payback_discounted_years.toFixed(1)} anos
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Custo Anual Base</p>
+                            <p className="text-xl font-semibold">
+                              R$ {simulationResults.financial_summary?.annual_cost_base_case_r.toLocaleString('pt-BR')}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Custo Anual com BESS</p>
+                            <p className="text-xl font-semibold">
+                              R$ {simulationResults.financial_summary?.annual_cost_with_bess_r.toLocaleString('pt-BR')}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-gray-500">Economia Anual Bruta</p>
+                            <p className="text-xl font-semibold text-emerald-600">
+                              R$ {simulationResults.financial_summary?.annual_gross_savings_r.toLocaleString('pt-BR')}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Button onClick={() => setActiveTab("resultados")}>
+                        Avançar para Resultados Detalhados
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-12">
+                    <p>Para visualizar a análise, preencha os dados e clique em "Avançar para Análise" na tela anterior.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -191,11 +342,46 @@ const SimuladorPage = () => {
                   Visualize os resultados da simulação e gere relatórios.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-center text-gray-500 py-12">
-                  Funcionalidade em desenvolvimento. Esta seção exibirá um dashboard resumo, 
-                  gráficos interativos e permitirá a exportação do relatório detalhado.
-                </p>
+              <CardContent>
+                {Object.keys(simulationResults).length > 0 ? (
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-lg font-bold mb-4">Fluxo de Caixa</h3>
+                      <div className="bg-white p-4 rounded-lg border">
+                        <div className="grid grid-cols-6 md:grid-cols-11 gap-2 mb-2">
+                          <div className="font-medium">Ano</div>
+                          {simulationResults.financial_summary?.cash_flow_r.map((_, i) => (
+                            <div key={i} className="font-medium text-center">{i}</div>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-6 md:grid-cols-11 gap-2">
+                          <div className="font-medium">Fluxo (R$)</div>
+                          {simulationResults.financial_summary?.cash_flow_r.map((value, i) => (
+                            <div 
+                              key={i} 
+                              className={`text-center ${value < 0 ? 'text-red-600' : 'text-emerald-600'}`}
+                            >
+                              {value.toLocaleString('pt-BR')}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <Button variant="outline" className="mr-2">
+                        Exportar Relatório PDF
+                      </Button>
+                      <Button variant="outline">
+                        Exportar Dados CSV
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-12">
+                    <p>Para visualizar os resultados completos, conclua a análise na tela anterior.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

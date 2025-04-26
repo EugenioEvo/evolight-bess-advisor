@@ -1,1 +1,8 @@
+
 project_id = "fwroybvmrydhswiztkbl"
+
+[functions.calculate-bess-size]
+verify_jwt = true
+
+[functions.run-bess-simulation]
+verify_jwt = true
