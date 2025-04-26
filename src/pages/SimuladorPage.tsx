@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -20,26 +19,23 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useBessSize } from '@/hooks/useBessSize'
+import { toast } from "sonner"
 
-// Form schema definition with validation
 const formSchema = z.object({
-  // Informações Básicas
   projectName: z.string().min(2, { message: "Nome do projeto deve ter no mínimo 2 caracteres" }),
   installationType: z.enum(["industrial", "commercial", "residential"]),
   
-  // Dados do BESS
   bessCapacityKwh: z.coerce.number().min(1, { message: "Capacidade deve ser maior que 0" }),
   bessPowerKw: z.coerce.number().min(1, { message: "Potência deve ser maior que 0" }),
   bessEfficiency: z.coerce.number().min(50, { message: "Eficiência mínima é 50%" }).max(100, { message: "Eficiência máxima é 100%" }).default(90),
   bessMaxDod: z.coerce.number().min(1, { message: "DoD mínimo é 1%" }).max(100, { message: "DoD máximo é 100%" }).default(85),
   bessInitialSoc: z.coerce.number().min(0, { message: "SoC mínimo é 0%" }).max(100, { message: "SoC máximo é 100%" }).default(50),
 
-  // Sistema PV
   hasPv: z.boolean().default(false),
   pvPowerKwp: z.coerce.number().min(0).default(0),
   pvPolicy: z.enum(["inject", "grid_zero"]).default("inject"),
   
-  // Estrutura Tarifária
   tePeak: z.coerce.number().min(0, { message: "Valor deve ser maior ou igual a 0" }),
   teOffpeak: z.coerce.number().min(0, { message: "Valor deve ser maior ou igual a 0" }),
   tusdPeakKwh: z.coerce.number().min(0, { message: "Valor deve ser maior ou igual a 0" }),
@@ -49,13 +45,11 @@ const formSchema = z.object({
   peakStartHour: z.coerce.number().min(0, { message: "Valor deve estar entre 0 e 23" }).max(23, { message: "Valor deve estar entre 0 e 23" }).default(18),
   peakEndHour: z.coerce.number().min(0, { message: "Valor deve estar entre 0 e 23" }).max(23, { message: "Valor deve estar entre 0 e 23" }).default(21),
   
-  // Gerador Diesel
   hasDiesel: z.boolean().default(false),
   dieselPowerKw: z.coerce.number().min(0).default(0),
   dieselConsumption: z.coerce.number().min(0).default(0.3),
   dieselFuelCost: z.coerce.number().min(0).default(6.50),
   
-  // Parâmetros Financeiros
   discountRate: z.coerce.number().min(0).default(10),
   horizonYears: z.coerce.number().min(1).default(10),
   businessModel: z.enum(["turnkey", "eaas"]).default("turnkey"),
@@ -64,7 +58,6 @@ const formSchema = z.object({
   setupCost: z.coerce.number().min(0).default(0),
   annualServiceCost: z.coerce.number().min(0).default(0),
   
-  // Estratégias de Controle
   usePeakShaving: z.boolean().default(true),
   useArbitrage: z.boolean().default(false),
   useBackup: z.boolean().default(false),
@@ -73,7 +66,7 @@ const formSchema = z.object({
 });
 
 const SimuladorPage: React.FC = () => {
-  // Initialize form
+  const { calculateBessSize } = useBessSize()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -114,10 +107,48 @@ const SimuladorPage: React.FC = () => {
     },
   });
   
-  // Form submission handler
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    // Here we would later send the data to a Supabase Edge Function or API
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const load_profile = [50, 45, 40, 40, 45, 55, 70, 80, 90, 100, 110, 115, 110, 105, 100, 100, 110, 150, 160, 140, 120, 100, 80, 60]
+      
+      const sizingResult = await calculateBessSize({
+        load_profile,
+        pv_profile: values.hasPv ? [0, 0, 0, 0, 0, 5, 20, 40, 60, 70, 75, 70, 60, 40, 20, 5, 0, 0, 0, 0, 0, 0, 0, 0].map(v => v * (values.pvPowerKwp / 75)) : undefined,
+        tariff_structure: {
+          peak_start_hour: values.peakStartHour,
+          peak_end_hour: values.peakEndHour
+        },
+        sizing_params: {
+          backup_required: values.useBackup,
+          peak_shaving_required: values.usePeakShaving,
+          peak_shaving_target_kw: values.peakShavingTarget,
+          arbitrage_required: values.useArbitrage,
+          pv_optim_required: values.usePvOptim,
+          grid_zero: values.pvPolicy === 'grid_zero'
+        },
+        bess_technical_params: {
+          discharge_eff: Math.sqrt(values.bessEfficiency / 100),
+          charge_eff: Math.sqrt(values.bessEfficiency / 100)
+        },
+        simulation_params: {
+          interval_minutes: 60
+        }
+      })
+
+      form.setValue('bessPowerKw', sizingResult.calculated_power_kw)
+      form.setValue('bessCapacityKwh', sizingResult.calculated_energy_kwh)
+      
+      toast.success("BESS dimensionado com sucesso!", {
+        description: `Potência: ${sizingResult.calculated_power_kw} kW, Capacidade: ${sizingResult.calculated_energy_kwh} kWh`
+      })
+      
+      console.log(values)
+    } catch (error) {
+      console.error('Error calculating BESS size:', error)
+      toast.error("Erro ao dimensionar BESS", {
+        description: "Tente novamente ou ajuste os parâmetros"
+      })
+    }
   };
 
   return (
