@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Navigate } from "react-router-dom";
 
 // Pages
@@ -16,8 +16,6 @@ import SobreEvolightPage from "./pages/SobreEvolightPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import SplashScreen from "./components/SplashScreen";
 import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient();
 
 // Check if user has been onboarded
 const hasOnboarded = () => {
@@ -42,27 +40,32 @@ const OnboardingGuard = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <OnboardingGuard>
-          <Routes>
-            <Route path="/" element={<SplashScreen />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/simulador" element={<SimuladorPage />} />
-            <Route path="/documentacao" element={<DocumentacaoPage />} />
-            <Route path="/academia" element={<AcademiaPage />} />
-            <Route path="/sobre" element={<SobreEvolightPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </OnboardingGuard>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Create a new QueryClient instance for each component instance
+  const [queryClient] = useState(() => new QueryClient());
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <OnboardingGuard>
+            <Routes>
+              <Route path="/" element={<SplashScreen />} />
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/simulador" element={<SimuladorPage />} />
+              <Route path="/documentacao" element={<DocumentacaoPage />} />
+              <Route path="/academia" element={<AcademiaPage />} />
+              <Route path="/sobre" element={<SobreEvolightPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </OnboardingGuard>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
