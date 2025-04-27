@@ -39,11 +39,6 @@ const OnboardingGuard = ({ children }: { children: JSX.Element }) => {
     }
   }, [location.pathname]);
   
-  // If user hasn't been onboarded and isn't on the splash or onboarding page, redirect to onboarding
-  if (!hasOnboarded() && location.pathname !== "/" && location.pathname !== "/onboarding") {
-    return <Navigate to="/onboarding" />;
-  }
-  
   return children;
 };
 

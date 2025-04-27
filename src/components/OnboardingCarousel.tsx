@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Battery, Zap, LineChart, LightbulbOff, Settings } from 'lucide-react';
-import { setOnboarded } from '@/lib/utils';
 
 const slides = [
   {
@@ -50,7 +49,6 @@ const OnboardingCarousel: React.FC = () => {
   };
 
   const completeOnboarding = () => {
-    setOnboarded();
     navigate('/home');
   };
 
@@ -69,20 +67,17 @@ const OnboardingCarousel: React.FC = () => {
           {slides[currentSlide].description}
         </p>
         
-        <div className="flex justify-center space-x-2 mb-12">
+        <div className="carousel-dots">
           {slides.map((_, index) => (
-            <button
-              key={index}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                currentSlide === index ? 'bg-evolight-gold' : 'bg-gray-300'
-              }`}
+            <div 
+              key={index} 
+              className={`carousel-dot ${currentSlide === index ? 'active' : ''}`}
               onClick={() => setCurrentSlide(index)}
-              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-12">
           <div className="flex gap-4">
             {currentSlide > 0 && (
               <Button variant="outline" onClick={prevSlide}>

@@ -2,21 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EvolightLogo from './EvolightLogo';
-import { hasOnboarded } from '@/lib/utils';
 
 const SplashScreen: React.FC = () => {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    // Check if user has been onboarded before
-    const isOnboarded = hasOnboarded();
-    
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(() => {
-        // Navigate to onboarding or home based on whether user has completed onboarding
-        navigate(isOnboarded ? '/home' : '/onboarding');
+        navigate('/onboarding');
       }, 300);
     }, 2000);
 

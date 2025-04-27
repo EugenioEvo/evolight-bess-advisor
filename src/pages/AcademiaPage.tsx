@@ -1,179 +1,144 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Header from '@/components/Header';
-import { BookOpen, Video, FileText, CheckCircle, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { BookOpen, Play, Award } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AcademiaPage: React.FC = () => {
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
-  
   const modules = [
     {
-      id: 'bess-intro',
       title: 'Introdução aos Sistemas BESS',
-      description: 'Fundamentos de armazenamento de energia por baterias',
-      lessons: 4,
+      description: 'Aprenda os fundamentos dos sistemas de armazenamento de energia por bateria.',
+      progress: 100,
       duration: '45 min',
-      progress: 0,
-      image: '/lovable-uploads/b7404c96-b1f9-49ee-a3f5-aa2a0696d688.png', // Placeholder - needs to be replaced
-      badge: 'Básico'
+      completed: true,
     },
     {
-      id: 'peak-shaving',
-      title: 'Peak Shaving com BESS',
-      description: 'Técnicas de redução de picos de demanda',
-      lessons: 3,
-      duration: '30 min',
-      progress: 0,
-      image: '/lovable-uploads/b7404c96-b1f9-49ee-a3f5-aa2a0696d688.png', // Placeholder - needs to be replaced
-      badge: 'Intermediário'
+      title: 'Aplicações do BESS',
+      description: 'Conheça as diferentes aplicações do BESS: backup, peak shaving e arbitragem.',
+      progress: 60,
+      duration: '55 min',
+      completed: false,
     },
     {
-      id: 'pv-integration',
-      title: 'Integração Solar + BESS',
-      description: 'Otimização de sistemas solares com armazenamento',
-      lessons: 5,
-      duration: '60 min',
+      title: 'Dimensionamento de Sistemas BESS',
+      description: 'Aprenda a dimensionar corretamente sistemas BESS para diferentes aplicações.',
       progress: 0,
-      image: '/lovable-uploads/b7404c96-b1f9-49ee-a3f5-aa2a0696d688.png', // Placeholder - needs to be replaced
-      badge: 'Avançado'
-    }
+      duration: '1h 20min',
+      completed: false,
+    },
+    {
+      title: 'Aspectos Financeiros do BESS',
+      description: 'Entenda os modelos financeiros e o cálculo de ROI para sistemas BESS.',
+      progress: 0,
+      duration: '1h',
+      completed: false,
+    },
+    {
+      title: 'Integração com Sistemas Fotovoltaicos',
+      description: 'Saiba como integrar sistemas BESS com geração solar fotovoltaica.',
+      progress: 0,
+      duration: '50 min',
+      completed: false,
+    },
+    {
+      title: 'Regulação e Normas Técnicas',
+      description: 'Conheça as principais regulações e normas técnicas aplicáveis aos sistemas BESS no Brasil.',
+      progress: 0,
+      duration: '40 min',
+      completed: false,
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <main className="flex-1 container py-8 px-4">
+      <main className="flex-1 container py-6 px-4 md:py-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-evolight-navy mb-2">Academia da Sustentabilidade</h1>
-          <p className="text-gray-600">Aprenda sobre sistemas de armazenamento de energia, energia solar e sustentabilidade.</p>
+          <p className="text-gray-600">Aprenda sobre sistemas BESS, energia sustentável e soluções inovadoras para o mercado energético.</p>
         </div>
         
-        {!selectedModule ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {modules.map(module => (
-              <Card key={module.id} className="overflow-hidden hover:border-evolight-navy transition-all duration-300">
-                <div className="h-40 bg-gray-200 relative">
-                  {module.image && <img src={module.image} alt={module.title} className="w-full h-full object-cover" />}
-                  <Badge className="absolute top-3 right-3 bg-evolight-navy">{module.badge}</Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle>{module.title}</CardTitle>
-                  <CardDescription>{module.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 mr-1" />
-                      <span>{module.lessons} lições</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{module.duration}</span>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Progresso</span>
-                      <span>{module.progress}%</span>
-                    </div>
-                    <Progress value={module.progress} className="h-2" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full bg-evolight-navy hover:bg-evolight-navy/90"
-                    onClick={() => setSelectedModule(module.id)}
-                  >
-                    {module.progress > 0 ? 'Continuar' : 'Começar'}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div>
-            <Button 
-              variant="ghost" 
-              className="mb-6"
-              onClick={() => setSelectedModule(null)}
-            >
-              ← Voltar para módulos
-            </Button>
+        <div className="mb-8 bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <div className="bg-evolight-lightgold rounded-full p-4">
+              <Award className="h-12 w-12 text-evolight-gold" />
+            </div>
             
-            <Card className="mb-8">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <Badge className="mb-2 bg-evolight-navy">
-                      {modules.find(m => m.id === selectedModule)?.badge}
-                    </Badge>
-                    <CardTitle className="text-2xl">
-                      {modules.find(m => m.id === selectedModule)?.title}
-                    </CardTitle>
-                    <CardDescription className="mt-1">
-                      {modules.find(m => m.id === selectedModule)?.description}
-                    </CardDescription>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">
-                      {modules.find(m => m.id === selectedModule)?.lessons} lições
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Duração: {modules.find(m => m.id === selectedModule)?.duration}
-                    </p>
-                  </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold mb-2 text-evolight-navy">Seu Progresso</h2>
+              <div className="mb-4">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">1 de 6 módulos concluídos</span>
+                  <span className="text-sm font-medium text-gray-700">17%</span>
                 </div>
+                <Progress value={17} className="h-2" />
+              </div>
+              <p className="text-gray-600 mb-4">
+                Continue sua jornada de aprendizado para ganhar distintivos e se tornar um especialista em sistemas BESS.
+              </p>
+              <div className="flex space-x-2">
+                <div className="flex items-center justify-center w-8 h-8 bg-evolight-gold rounded-full text-white text-xs font-medium">
+                  1
+                </div>
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full text-gray-500 text-xs font-medium">
+                  2
+                </div>
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full text-gray-500 text-xs font-medium">
+                  3
+                </div>
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full text-gray-500 text-xs font-medium">
+                  4
+                </div>
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full text-gray-500 text-xs font-medium">
+                  5
+                </div>
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full text-gray-500 text-xs font-medium">
+                  6
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {modules.map((module, index) => (
+            <Card key={index} className={`hover:shadow-md transition-shadow ${module.completed ? 'border-l-4 border-l-green-500' : ''}`}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between">
+                  <span className="inline-block text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                    Módulo {index + 1}
+                  </span>
+                  <span className="text-xs text-gray-500">{module.duration}</span>
+                </div>
+                <CardTitle className="mt-2 flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-evolight-gold" />
+                  {module.title}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-evolight-navy flex items-center justify-center text-white mr-4">
-                      <Video className="h-5 w-5" />
+                <CardDescription>{module.description}</CardDescription>
+                {module.progress > 0 && (
+                  <div className="mt-4">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-700">Progresso</span>
+                      <span className="text-xs font-medium text-gray-700">{module.progress}%</span>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium">Lição 1: Visão Geral</h3>
-                      <p className="text-sm text-gray-600">Introdução aos conceitos básicos</p>
-                    </div>
-                    <Button className="bg-evolight-navy">
-                      Iniciar <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    <Progress value={module.progress} className="h-1" />
                   </div>
-                  
-                  <div className="p-4 border rounded-lg flex items-center opacity-70">
-                    <div className="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center text-white mr-4">
-                      <FileText className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium">Lição 2: Componentes Principais</h3>
-                      <p className="text-sm text-gray-600">Detalhes sobre tecnologias de baterias</p>
-                    </div>
-                    <Button disabled variant="outline">
-                      Bloqueado
-                    </Button>
-                  </div>
-                  
-                  {/* Additional lessons would go here */}
-                  
-                  <div className="p-4 border rounded-lg flex items-center opacity-70">
-                    <div className="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center text-white mr-4">
-                      <CheckCircle className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium">Quiz Final</h3>
-                      <p className="text-sm text-gray-600">Teste seus conhecimentos</p>
-                    </div>
-                    <Button disabled variant="outline">
-                      Bloqueado
-                    </Button>
-                  </div>
-                </div>
+                )}
               </CardContent>
+              <CardFooter>
+                <Button className="w-full bg-evolight-navy hover:bg-evolight-navy/90">
+                  <Play className="mr-2 h-4 w-4" />
+                  {module.progress > 0 && !module.completed ? 'Continuar' : module.completed ? 'Revisitar' : 'Iniciar'}
+                </Button>
+              </CardFooter>
             </Card>
-          </div>
-        )}
+          ))}
+        </div>
       </main>
       
       <footer className="bg-white py-4 border-t border-gray-200">
