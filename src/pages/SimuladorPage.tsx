@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import Header from '@/components/Header';
@@ -18,9 +18,21 @@ import { TariffSection } from '@/components/simulador/TariffSection';
 import { DieselSection } from '@/components/simulador/DieselSection';
 import { FinancialSection } from '@/components/simulador/FinancialSection';
 import { ControlStrategies } from '@/components/simulador/ControlStrategies';
+import { ResultsDisplay } from '@/components/simulador/ResultsDisplay';
 
 const SimuladorPage = () => {
   const { calculateBessSize } = useBessSize();
+  const [activeTab, setActiveTab] = useState("dados");
+  const [simulationResults, setSimulationResults] = useState<{
+    calculatedPowerKw: number;
+    calculatedEnergyKwh: number;
+    paybackYears?: number;
+    annualSavings?: number;
+    roi?: number;
+    npv?: number;
+    isViable?: boolean;
+  } | null>(null);
+  
   const form = useForm<SimuladorFormValues>({
     resolver: zodResolver(simuladorFormSchema),
     defaultValues: {
@@ -220,9 +232,49 @@ const SimuladorPage = () => {
       form.setValue('bessPowerKw', sizingResult.calculated_power_kw);
       form.setValue('bessCapacityKwh', sizingResult.calculated_energy_kwh);
       
+      // Calculate estimated financials based on the sizing results
+      const costPerKwh = values.bessInstallationCost || 1500;
+      const totalInvestment = sizingResult.calculated_energy_kwh * costPerKwh;
+      
+      // Simplified annual savings calculation (real calculation would be based on full simulation)
+      let annualSavings = 0;
+      
+      // Peak shaving savings (simplified)
+      if (values.usePeakShaving) {
+        const peakReduction = values.peakShavingMethod === 'percentage' 
+          ? values.maxPeakDemandKw * (values.peakShavingPercentage / 100)
+          : values.peakShavingTarget || values.maxPeakDemandKw * 0.3;
+          
+        annualSavings += peakReduction * values.tusdPeakKw * 12; // Monthly demand savings * 12
+      }
+      
+      // Arbitrage savings (simplified)
+      if (values.useArbitrage) {
+        const dailyDischarge = sizingResult.calculated_energy_kwh * 0.7; // Assume 70% daily cycling
+        const energyPriceDiff = (values.tePeak + values.tusdPeakKwh) - 
+                               (values.teOffpeak + values.tusdOffpeakKwh);
+        annualSavings += dailyDischarge * energyPriceDiff * 22 * 12; // 22 business days/month
+      }
+      
+      // Simple payback period
+      const paybackYears = annualSavings > 0 ? totalInvestment / annualSavings : 0;
+      
+      // Set simulation results
+      setSimulationResults({
+        calculatedPowerKw: sizingResult.calculated_power_kw,
+        calculatedEnergyKwh: sizingResult.calculated_energy_kwh,
+        paybackYears,
+        annualSavings,
+        roi: (annualSavings * values.horizonYears) / totalInvestment * 100,
+        isViable: paybackYears > 0 && paybackYears < values.horizonYears
+      });
+      
       toast.success("BESS dimensionado com sucesso!", {
         description: `Potência: ${sizingResult.calculated_power_kw} kW, Capacidade: ${sizingResult.calculated_energy_kwh} kWh`
       });
+      
+      // Switch to analysis tab after successful calculation
+      setActiveTab("analise");
     } catch (error) {
       console.error('Error calculating BESS size:', error);
       toast.error("Erro ao dimensionar BESS", {
@@ -240,7 +292,7 @@ const SimuladorPage = () => {
           <p className="text-gray-600">Configure e execute simulações de sistemas de armazenamento de energia por bateria.</p>
         </div>
         
-        <Tabs defaultValue="dados" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="dados">Entrada de Dados</TabsTrigger>
             <TabsTrigger value="analise">Análise & Dimensionamento</TabsTrigger>
@@ -302,10 +354,18 @@ const SimuladorPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-center text-gray-500 py-12">
-                  Funcionalidade em desenvolvimento. Esta seção exibirá o progresso do processamento dos dados, 
-                  dimensionamento do sistema e simulação temporal da operação.
-                </p>
+                {simulationResults ? (
+                  <ResultsDisplay results={simulationResults} formValues={form.getValues()} />
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 mb-4">
+                      Nenhum dimensionamento realizado. Por favor, preencha os dados na aba "Entrada de Dados" e clique em "Dimensionar e Simular".
+                    </p>
+                    <Button onClick={() => setActiveTab("dados")}>
+                      Ir para Entrada de Dados
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -315,14 +375,29 @@ const SimuladorPage = () => {
               <CardHeader>
                 <CardTitle>Resultados & Relatórios</CardTitle>
                 <CardDescription>
-                  Visualize os resultados da simulação e gere relatórios.
+                  Visualize os resultados detalhados da simulação e gere relatórios.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-center text-gray-500 py-12">
-                  Funcionalidade em desenvolvimento. Esta seção exibirá um dashboard resumo, 
-                  gráficos interativos e permitirá a exportação do relatório detalhado.
-                </p>
+                {simulationResults ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <p className="mb-4">
+                      Visualização detalhada e exportação de relatórios em desenvolvimento.
+                    </p>
+                    <p className="text-sm">
+                      Em breve: Gráficos interativos, simulação temporal, fluxo de caixa detalhado e exportação de relatório em PDF.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 mb-4">
+                      Nenhum dimensionamento realizado. Por favor, preencha os dados na aba "Entrada de Dados" e clique em "Dimensionar e Simular".
+                    </p>
+                    <Button onClick={() => setActiveTab("dados")}>
+                      Ir para Entrada de Dados
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -339,3 +414,4 @@ const SimuladorPage = () => {
 };
 
 export default SimuladorPage;
+
