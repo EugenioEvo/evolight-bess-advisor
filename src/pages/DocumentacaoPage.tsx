@@ -1,101 +1,119 @@
 
 import React from 'react';
 import Header from '@/components/Header';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 const DocumentacaoPage: React.FC = () => {
+  const documentCategories = [
+    { id: 'all', name: 'Todos' },
+    { id: 'bess', name: 'Baterias' },
+    { id: 'inverters', name: 'Inversores' },
+    { id: 'pcs', name: 'PCS' },
+    { id: 'manuals', name: 'Manuais' },
+  ];
+
   const documents = [
-    {
-      title: 'Especificações Técnicas Baterias LFP',
-      category: 'Datasheet',
-      description: 'Especificações técnicas detalhadas das baterias de fosfato de ferro-lítio (LFP).',
-      date: '15/03/2025',
-    },
-    {
-      title: 'Manual de Integração BESS',
-      category: 'Manual',
-      description: 'Guia completo para integração de sistemas BESS com instalações existentes.',
-      date: '10/02/2025',
-    },
-    {
-      title: 'Inversores para Sistemas BESS',
-      category: 'Datasheet',
-      description: 'Especificações técnicas dos inversores compatíveis com sistemas BESS.',
-      date: '25/01/2025',
-    },
-    {
-      title: 'Guia de Manutenção BESS',
-      category: 'Guia',
-      description: 'Procedimentos e cronograma recomendados para manutenção de sistemas BESS.',
-      date: '05/01/2025',
-    },
-    {
-      title: 'Regulação ANP para Sistemas BESS',
-      category: 'Regulatório',
-      description: 'Compilação das principais regulamentações aplicáveis a sistemas BESS no Brasil.',
-      date: '12/12/2024',
-    },
-    {
-      title: 'Sistemas de Controle PCS',
-      category: 'Datasheet',
-      description: 'Especificações dos sistemas de controle de potência para BESS.',
-      date: '28/11/2024',
-    },
+    { id: 1, title: 'Manual Técnico - Sistema BESS 100kWh', category: 'manuals', type: 'PDF', size: '3.2 MB' },
+    { id: 2, title: 'Especificações Bateria LFP - Evolight', category: 'bess', type: 'PDF', size: '1.8 MB' },
+    { id: 3, title: 'Datasheet Inversor Híbrido - Série Pro', category: 'inverters', type: 'PDF', size: '2.5 MB' },
+    { id: 4, title: 'Guia de Integração PCS - Sistema Comercial', category: 'pcs', type: 'PDF', size: '4.1 MB' },
+    { id: 5, title: 'Certificado de Conformidade - Baterias', category: 'bess', type: 'PDF', size: '0.9 MB' },
+    { id: 6, title: 'Manual de Instalação - Sistema Completo', category: 'manuals', type: 'PDF', size: '5.7 MB' },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <main className="flex-1 container py-6 px-4 md:py-10">
+      <main className="flex-1 container py-8 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-evolight-navy mb-2">Documentação Técnica</h1>
-          <p className="text-gray-600">Acesse datasheets, manuais técnicos e documentação regulatória sobre sistemas BESS.</p>
+          <p className="text-gray-600">Acesse manuais, datasheets e documentação técnica dos produtos Evolight.</p>
         </div>
         
-        <div className="mb-6">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Buscar documentos..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-evolight-gold focus:border-transparent"
-            />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="w-full md:w-3/4">
+            {/* Search and Filter */}
+            <div className="mb-6 flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input placeholder="Buscar documentos" className="pl-10" />
+              </div>
+              <Button variant="outline" className="flex gap-2">
+                <Filter size={18} />
+                Filtros
+              </Button>
             </div>
+            
+            {/* Documents List */}
+            <Tabs defaultValue="all" className="w-full">
+              <TabsList className="mb-4">
+                {documentCategories.map(category => (
+                  <TabsTrigger key={category.id} value={category.id}>
+                    {category.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              
+              {documentCategories.map(category => (
+                <TabsContent key={category.id} value={category.id} className="space-y-4">
+                  {documents
+                    .filter(doc => category.id === 'all' || doc.category === category.id)
+                    .map(document => (
+                      <Card key={document.id}>
+                        <CardHeader className="py-3">
+                          <CardTitle className="text-lg flex items-center">
+                            <FileText className="mr-2 h-5 w-5 text-evolight-navy" />
+                            {document.title}
+                          </CardTitle>
+                          <CardDescription>
+                            {document.type} • {document.size}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardFooter className="py-3 flex justify-end">
+                          <Button variant="outline" size="sm" className="flex gap-1">
+                            <Download size={16} />
+                            Download
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  
+                  {documents.filter(doc => category.id === 'all' || doc.category === category.id).length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Nenhum documento encontrado nesta categoria.</p>
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
           </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documents.map((doc, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between">
-                  <span className="inline-block text-xs font-medium text-evolight-gold bg-evolight-lightgold px-2 py-1 rounded">
-                    {doc.category}
-                  </span>
-                  <span className="text-xs text-gray-500">{doc.date}</span>
-                </div>
-                <CardTitle className="mt-2">{doc.title}</CardTitle>
+          
+          <div className="w-full md:w-1/4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recursos Recentes</CardTitle>
+                <CardDescription>Documentos adicionados recentemente</CardDescription>
               </CardHeader>
-              <CardContent>
-                <CardDescription>{doc.description}</CardDescription>
+              <CardContent className="space-y-3">
+                {documents.slice(0, 3).map(document => (
+                  <div key={`recent-${document.id}`} className="flex items-start">
+                    <FileText className="h-4 w-4 mt-1 mr-2 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">{document.title}</p>
+                      <p className="text-xs text-muted-foreground">{document.type} • {document.size}</p>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" size="sm">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Visualizar
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </Button>
+              <CardFooter>
+                <Button variant="ghost" size="sm" className="w-full">Ver todos</Button>
               </CardFooter>
             </Card>
-          ))}
+          </div>
         </div>
       </main>
       

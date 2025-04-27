@@ -1,14 +1,16 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import EvolightLogo from './EvolightLogo';
-import { Home, FileText, BookOpen, Info, Grid } from 'lucide-react';
+import { Home, FileText, BookOpen, Info, Grid, Settings } from 'lucide-react';
 
 interface SidebarMenuProps {
   onNavigate?: () => void;
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ onNavigate }) => {
+  const location = useLocation();
+  
   const menuItems = [
     {
       title: 'Início',
@@ -35,6 +37,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onNavigate }) => {
       icon: <Info className="h-5 w-5" />,
       path: '/sobre',
     },
+    {
+      title: 'Configurações',
+      icon: <Settings className="h-5 w-5" />,
+      path: '/configuracoes',
+      disabled: true,
+    },
   ];
 
   return (
@@ -45,18 +53,27 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onNavigate }) => {
       
       <nav className="flex-1">
         <ul className="space-y-1 px-2">
-          {menuItems.map((item) => (
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
             <li key={item.path}>
               <Link
-                to={item.path}
-                className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-evolight-lightgray hover:text-evolight-navy transition-colors"
-                onClick={onNavigate}
+                to={item.disabled ? '#' : item.path}
+                className={`flex items-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
+                  isActive 
+                    ? 'bg-evolight-navy/10 text-evolight-navy' 
+                    : 'hover:bg-evolight-lightgray hover:text-evolight-navy'
+                } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={item.disabled ? (e) => e.preventDefault() : onNavigate}
               >
-                <span className="mr-3 text-gray-500">{item.icon}</span>
+                <span className={`mr-3 ${isActive ? 'text-evolight-navy' : 'text-gray-500'}`}>
+                  {item.icon}
+                </span>
                 {item.title}
+                {item.disabled && <span className="ml-auto text-xs bg-gray-200 px-1.5 py-0.5 rounded">Em breve</span>}
               </Link>
             </li>
-          ))}
+          )})}
         </ul>
       </nav>
       
