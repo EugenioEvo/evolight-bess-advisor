@@ -24,46 +24,93 @@ const SimuladorPage = () => {
   const form = useForm<SimuladorFormValues>({
     resolver: zodResolver(simuladorFormSchema),
     defaultValues: {
+      // Informações do Projeto
       projectName: "",
       installationType: "industrial",
+      location: "",
+      
+      // Perfil de Consumo
+      loadEntryMethod: "average",
+      avgPeakDemandKw: 100,
+      maxPeakDemandKw: 150,
+      avgDailyConsumptionKwh: 2000,
+      avgMonthlyConsumptionKwh: 60000,
+      
+      // Parâmetros BESS
       bessCapacityKwh: 215,
       bessPowerKw: 108,
       bessEfficiency: 90,
       bessMaxDod: 85,
       bessInitialSoc: 50,
+      bessTechnology: "lfp",
+      bessLifetime: 10,
+      bessAnnualDegradation: 1.0,
+      bessDailySelfdischarge: 0.1,
+      
+      // Sistema Solar
       hasPv: false,
+      pvDataEntryMethod: "power",
       pvPowerKwp: 0,
+      pvAnnualGeneration: 0,
       pvPolicy: "inject",
+      
+      // Estrutura Tarifária
+      tarifaryGroup: "groupA",
+      modalityA: "blue",
       tePeak: 0.80,
       teOffpeak: 0.40,
+      teIntermediate: 0,
       tusdPeakKwh: 0.20,
       tusdOffpeakKwh: 0.10,
+      tusdIntermediateKwh: 0,
       tusdPeakKw: 50.0,
       tusdOffpeakKw: 10.0,
+      tariffB: 0,
+      flagCost: 0,
       peakStartHour: 18,
       peakEndHour: 21,
+      contractedPeakDemandKw: 120,
+      contractedOffpeakDemandKw: 150,
+      
+      // Gerador Diesel
       hasDiesel: false,
       dieselPowerKw: 0,
       dieselConsumption: 0.3,
       dieselFuelCost: 6.50,
+      dieselOmCost: 0,
+      
+      // Parâmetros Financeiros
       discountRate: 10,
       horizonYears: 10,
       businessModel: "turnkey",
       capexCost: 0,
-      annualOmCost: 0,
+      bessInstallationCost: 1500,
+      annualOmCost: 2,
       setupCost: 0,
       annualServiceCost: 0,
+      incentivesValue: 0,
+      annualLoadGrowth: 0,
+      annualTariffAdjustment: 5,
+      
+      // Upgrade de Rede
+      avoidsGridUpgrade: false,
+      avoidedUpgradeCost: 0,
+      upgradeForeseeenYear: 0,
+      
+      // Impostos
+      considerTaxes: false,
+      taxRate: 34,
+      
+      // Estratégias de Controle
       usePeakShaving: true,
       useArbitrage: false,
       useBackup: false,
       usePvOptim: false,
+      peakShavingMethod: "percentage",
       peakShavingTarget: 0,
-      avgPeakDemandKw: 0,
-      maxPeakDemandKw: 0,
-      avgDailyConsumptionKwh: 0,
-      avgMonthlyConsumptionKwh: 0,
-      contractedPeakDemandKw: 0,
-      contractedOffpeakDemandKw: 0,
+      peakShavingPercentage: 30,
+      criticalLoadKw: 0,
+      backupDurationHours: 2,
     },
   });
   
@@ -88,6 +135,29 @@ const SimuladorPage = () => {
         ? [0, 0, 0, 0, 0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0, 0.9, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0, 0, 0, 0]
             .map(v => v * values.pvPowerKwp) 
         : undefined;
+
+      // Define peak shaving target or reduction
+      let peakShavingTarget = 0;
+      let peakReductionKw = 0;
+      
+      if (values.usePeakShaving) {
+        if (values.peakShavingMethod === 'percentage') {
+          peakReductionKw = maxLoad * (values.peakShavingPercentage / 100);
+        } else if (values.peakShavingMethod === 'reduction') {
+          peakReductionKw = values.peakShavingTarget;
+        } else if (values.peakShavingMethod === 'target') {
+          peakShavingTarget = values.peakShavingTarget;
+        }
+      }
+      
+      // Define critical load for backup if applicable
+      let criticalLoadKw = undefined;
+      let backupDurationH = undefined;
+      
+      if (values.useBackup) {
+        criticalLoadKw = values.criticalLoadKw > 0 ? values.criticalLoadKw : baseLoad * 0.5;
+        backupDurationH = values.backupDurationHours > 0 ? values.backupDurationHours : 2;
+      }
       
       console.log("Sending to Edge Function:", {
         load_profile,
@@ -98,11 +168,11 @@ const SimuladorPage = () => {
         },
         sizing_params: {
           backup_required: values.useBackup,
-          critical_load_kw: values.useBackup ? baseLoad * 0.5 : undefined,
-          backup_duration_h: values.useBackup ? 2 : undefined,
+          critical_load_kw: criticalLoadKw,
+          backup_duration_h: backupDurationH,
           peak_shaving_required: values.usePeakShaving,
-          peak_shaving_target_kw: values.usePeakShaving ? values.peakShavingTarget : 0,
-          peak_reduction_kw: values.usePeakShaving ? maxLoad * 0.3 : 0,
+          peak_shaving_target_kw: peakShavingTarget > 0 ? peakShavingTarget : undefined,
+          peak_reduction_kw: peakReductionKw > 0 ? peakReductionKw : undefined,
           arbitrage_required: values.useArbitrage,
           pv_optim_required: values.usePvOptim,
           grid_zero: values.pvPolicy === 'grid_zero',
@@ -126,11 +196,11 @@ const SimuladorPage = () => {
         },
         sizing_params: {
           backup_required: values.useBackup,
-          critical_load_kw: values.useBackup ? baseLoad * 0.5 : undefined,
-          backup_duration_h: values.useBackup ? 2 : undefined,
+          critical_load_kw: criticalLoadKw,
+          backup_duration_h: backupDurationH,
           peak_shaving_required: values.usePeakShaving,
-          peak_shaving_target_kw: values.usePeakShaving ? values.peakShavingTarget : 0,
-          peak_reduction_kw: values.usePeakShaving ? maxLoad * 0.3 : 0,
+          peak_shaving_target_kw: peakShavingTarget > 0 ? peakShavingTarget : undefined,
+          peak_reduction_kw: peakReductionKw > 0 ? peakReductionKw : undefined,
           arbitrage_required: values.useArbitrage,
           pv_optim_required: values.usePvOptim,
           grid_zero: values.pvPolicy === 'grid_zero',
@@ -215,7 +285,7 @@ const SimuladorPage = () => {
                     <ControlStrategies form={form} />
                     
                     <div className="flex justify-end pt-4">
-                      <Button type="submit">Avançar para Análise</Button>
+                      <Button type="submit">Dimensionar e Simular</Button>
                     </div>
                   </form>
                 </Form>

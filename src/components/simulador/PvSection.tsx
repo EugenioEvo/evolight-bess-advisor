@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -34,20 +34,81 @@ export function PvSection({ form }: PvSectionProps) {
       </div>
       
       {form.watch("hasPv") && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className="space-y-4 mt-4">
           <FormField
             control={form.control}
-            name="pvPowerKwp"
+            name="pvDataEntryMethod"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Potência Instalada (kWp)</FormLabel>
+                <FormLabel>Método de Entrada de Dados</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" {...field} />
+                  <RadioGroup 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    className="flex flex-row space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="power" id="power" />
+                      <FormLabel htmlFor="power" className="font-normal">Potência Instalada</FormLabel>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="upload" id="upload" />
+                      <FormLabel htmlFor="upload" className="font-normal">Upload Arquivo</FormLabel>
+                    </div>
+                  </RadioGroup>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+          
+          {form.watch("pvDataEntryMethod") === "power" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="pvPowerKwp"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Potência Instalada (kWp)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="pvAnnualGeneration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Geração Anual (kWh)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="100" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Opcional. Se não preenchido, será estimado com base na potência.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+          
+          {form.watch("pvDataEntryMethod") === "upload" && (
+            <FormItem>
+              <FormLabel>Arquivo de Geração PV (.csv, .xlsx)</FormLabel>
+              <FormControl>
+                <Input type="file" accept=".csv,.xlsx" disabled />
+              </FormControl>
+              <FormDescription>
+                Funcionalidade em desenvolvimento. Por favor, use a entrada por potência.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
           
           <FormField
             control={form.control}

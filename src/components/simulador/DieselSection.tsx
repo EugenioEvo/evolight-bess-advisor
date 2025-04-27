@@ -33,7 +33,7 @@ export function DieselSection({ form }: DieselSectionProps) {
       </div>
       
       {form.watch("hasDiesel") && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <FormField
             control={form.control}
             name="dieselPowerKw"
@@ -68,6 +68,20 @@ export function DieselSection({ form }: DieselSectionProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Custo Combustível (R$/L)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="dieselOmCost"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Custo O&M (R$/hora)</FormLabel>
                 <FormControl>
                   <Input type="number" step="0.01" {...field} />
                 </FormControl>

@@ -53,7 +53,25 @@ export function ProjectInfo({ form }: ProjectInfoProps) {
                     <RadioGroupItem value="residential" id="residential" />
                     <FormLabel htmlFor="residential" className="font-normal">Residencial</FormLabel>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="other" id="other" />
+                    <FormLabel htmlFor="other" className="font-normal">Outro</FormLabel>
+                  </div>
                 </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Localização/Estado</FormLabel>
+              <FormControl>
+                <Input placeholder="São Paulo, SP" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
