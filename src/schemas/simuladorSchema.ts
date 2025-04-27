@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const simuladorFormSchema = z.object({
@@ -42,6 +41,30 @@ export const simuladorFormSchema = z.object({
   useBackup: z.boolean().default(false),
   usePvOptim: z.boolean().default(false),
   peakShavingTarget: z.coerce.number().min(0).default(0),
+  
+  avgPeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda média deve ser maior ou igual a 0" })
+    .default(0),
+  
+  maxPeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda máxima deve ser maior ou igual a 0" })
+    .default(0),
+  
+  avgDailyConsumptionKwh: z.coerce.number()
+    .min(0, { message: "Consumo diário deve ser maior ou igual a 0" })
+    .default(0),
+  
+  avgMonthlyConsumptionKwh: z.coerce.number()
+    .min(0, { message: "Consumo mensal deve ser maior ou igual a 0" })
+    .default(0),
+  
+  contractedPeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda contratada deve ser maior ou igual a 0" })
+    .default(0),
+  
+  contractedOffpeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda contratada deve ser maior ou igual a 0" })
+    .default(0),
 });
 
 export type SimuladorFormValues = z.infer<typeof simuladorFormSchema>;

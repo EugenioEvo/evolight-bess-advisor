@@ -57,6 +57,12 @@ const SimuladorPage = () => {
       useBackup: false,
       usePvOptim: false,
       peakShavingTarget: 0,
+      avgPeakDemandKw: 0,
+      maxPeakDemandKw: 0,
+      avgDailyConsumptionKwh: 0,
+      avgMonthlyConsumptionKwh: 0,
+      contractedPeakDemandKw: 0,
+      contractedOffpeakDemandKw: 0,
     },
   });
   
