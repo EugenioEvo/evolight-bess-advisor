@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -68,22 +69,44 @@ const SimuladorPage = () => {
   
   const onSubmit = async (values: SimuladorFormValues) => {
     try {
-      const load_profile = [50, 45, 40, 40, 45, 55, 70, 80, 90, 100, 110, 115, 110, 105, 100, 100, 110, 150, 160, 140, 120, 100, 80, 60];
+      console.log("Submitting form values:", values);
       
-      const sizingResult = await calculateBessSize({
+      // Create a basic load profile based on average demand
+      const baseLoad = values.avgPeakDemandKw > 0 ? values.avgPeakDemandKw : 50;
+      const maxLoad = values.maxPeakDemandKw > 0 ? values.maxPeakDemandKw : baseLoad * 2;
+      
+      // Create a synthetic load profile with lower values during night, higher during day, and peak at evening
+      const load_profile = [
+        baseLoad * 0.7, baseLoad * 0.6, baseLoad * 0.5, baseLoad * 0.5, baseLoad * 0.6, baseLoad * 0.8, 
+        baseLoad * 1.0, baseLoad * 1.2, baseLoad * 1.4, baseLoad * 1.6, baseLoad * 1.8, baseLoad * 1.9,
+        baseLoad * 1.8, baseLoad * 1.7, baseLoad * 1.6, baseLoad * 1.6, baseLoad * 1.8, maxLoad * 0.9,
+        maxLoad, maxLoad * 0.9, maxLoad * 0.7, baseLoad * 1.4, baseLoad * 1.0, baseLoad * 0.8
+      ];
+      
+      // Calculate PV profile if applicable
+      const pv_profile = values.hasPv && values.pvPowerKwp > 0 
+        ? [0, 0, 0, 0, 0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0, 0.9, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0, 0, 0, 0]
+            .map(v => v * values.pvPowerKwp) 
+        : undefined;
+      
+      console.log("Sending to Edge Function:", {
         load_profile,
-        pv_profile: values.hasPv ? [0, 0, 0, 0, 0, 5, 20, 40, 60, 70, 75, 70, 60, 40, 20, 5, 0, 0, 0, 0, 0, 0, 0, 0].map(v => v *  (values.pvPowerKwp / 75)) : undefined,
+        pv_profile,
         tariff_structure: {
           peak_start_hour: values.peakStartHour,
           peak_end_hour: values.peakEndHour
         },
         sizing_params: {
           backup_required: values.useBackup,
+          critical_load_kw: values.useBackup ? baseLoad * 0.5 : undefined,
+          backup_duration_h: values.useBackup ? 2 : undefined,
           peak_shaving_required: values.usePeakShaving,
-          peak_shaving_target_kw: values.peakShavingTarget,
+          peak_shaving_target_kw: values.usePeakShaving ? values.peakShavingTarget : 0,
+          peak_reduction_kw: values.usePeakShaving ? maxLoad * 0.3 : 0,
           arbitrage_required: values.useArbitrage,
           pv_optim_required: values.usePvOptim,
-          grid_zero: values.pvPolicy === 'grid_zero'
+          grid_zero: values.pvPolicy === 'grid_zero',
+          sizing_buffer_factor: 1.1
         },
         bess_technical_params: {
           discharge_eff: Math.sqrt(values.bessEfficiency / 100),
@@ -94,14 +117,42 @@ const SimuladorPage = () => {
         }
       });
 
+      const sizingResult = await calculateBessSize({
+        load_profile,
+        pv_profile,
+        tariff_structure: {
+          peak_start_hour: values.peakStartHour,
+          peak_end_hour: values.peakEndHour
+        },
+        sizing_params: {
+          backup_required: values.useBackup,
+          critical_load_kw: values.useBackup ? baseLoad * 0.5 : undefined,
+          backup_duration_h: values.useBackup ? 2 : undefined,
+          peak_shaving_required: values.usePeakShaving,
+          peak_shaving_target_kw: values.usePeakShaving ? values.peakShavingTarget : 0,
+          peak_reduction_kw: values.usePeakShaving ? maxLoad * 0.3 : 0,
+          arbitrage_required: values.useArbitrage,
+          pv_optim_required: values.usePvOptim,
+          grid_zero: values.pvPolicy === 'grid_zero',
+          sizing_buffer_factor: 1.1
+        },
+        bess_technical_params: {
+          discharge_eff: Math.sqrt(values.bessEfficiency / 100),
+          charge_eff: Math.sqrt(values.bessEfficiency / 100)
+        },
+        simulation_params: {
+          interval_minutes: 60
+        }
+      });
+
+      console.log("Received sizing result:", sizingResult);
+      
       form.setValue('bessPowerKw', sizingResult.calculated_power_kw);
       form.setValue('bessCapacityKwh', sizingResult.calculated_energy_kwh);
       
       toast.success("BESS dimensionado com sucesso!", {
         description: `Potência: ${sizingResult.calculated_power_kw} kW, Capacidade: ${sizingResult.calculated_energy_kwh} kWh`
       });
-      
-      console.log(values);
     } catch (error) {
       console.error('Error calculating BESS size:', error);
       toast.error("Erro ao dimensionar BESS", {
