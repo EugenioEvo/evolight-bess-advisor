@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Check, AlertCircle } from 'lucide-react';
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
+import { ViabilityIndicator } from './financial/ViabilityIndicator';
+import { MetricsTable } from './financial/MetricsTable';
 
 interface FinancialResultsProps {
   results: {
@@ -25,52 +25,36 @@ export function FinancialResults({ results, formValues }: FinancialResultsProps)
     ? results.isViable 
     : (paybackYears > 0 && paybackYears < formValues.horizonYears);
 
+  const metrics = [
+    {
+      label: "Investimento Total",
+      value: `R$ ${totalInvestment.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}`,
+      highlight: true
+    },
+    {
+      label: "Economia Anual",
+      value: `R$ ${estimatedAnnualSavings.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}`,
+      highlight: true
+    },
+    {
+      label: "Payback Simples",
+      value: `${paybackYears.toFixed(1)} anos`
+    },
+    {
+      label: "ROI",
+      value: `${(results.roi || ((estimatedAnnualSavings * formValues.horizonYears) / totalInvestment * 100)).toFixed(1)}%`
+    }
+  ];
+
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="transition-all duration-200 hover:shadow-md">
+      <CardContent className="pt-6 space-y-4">
         <h3 className="text-lg font-semibold mb-4">Análise Financeira</h3>
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-lg">Viabilidade:</span>
-          <div className="flex items-center">
-            {isViable ? (
-              <Check className="h-6 w-6 text-green-500 mr-2" />
-            ) : (
-              <AlertCircle className="h-6 w-6 text-yellow-500 mr-2" />
-            )}
-            <span className={isViable ? "text-green-500 font-semibold" : "text-yellow-500 font-semibold"}>
-              {isViable ? 'Viável' : 'Revisar Parâmetros'}
-            </span>
-          </div>
-        </div>
-        
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Métrica</TableHead>
-              <TableHead>Valor</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell>Investimento Total</TableCell>
-              <TableCell>R$ {totalInvestment.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Economia Anual</TableCell>
-              <TableCell>R$ {estimatedAnnualSavings.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Payback Simples</TableCell>
-              <TableCell>{paybackYears.toFixed(1)} anos</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>ROI</TableCell>
-              <TableCell>
-                {(results.roi || ((estimatedAnnualSavings * formValues.horizonYears) / totalInvestment * 100)).toFixed(1)}%
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <ViabilityIndicator isViable={isViable} />
+        <MetricsTable metrics={metrics} />
+        <p className="text-xs text-muted-foreground mt-4 italic text-center">
+          *Valores estimados com base nos parâmetros fornecidos
+        </p>
       </CardContent>
     </Card>
   );
