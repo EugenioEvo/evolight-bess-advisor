@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from "@/components/ui/button";
 import { useBessSize } from '@/hooks/useBessSize';
 import { toast } from "sonner";
 import { simuladorFormSchema, type SimuladorFormValues } from '@/schemas/simuladorSchema';
@@ -11,7 +12,7 @@ import { HeaderSection } from '@/components/simulador/HeaderSection';
 import { FooterSection } from '@/components/simulador/FooterSection';
 import { SimuladorForm } from '@/components/simulador/SimuladorForm';
 import { AnalysisSection } from '@/components/simulador/AnalysisSection';
-import { Button } from '@/components/ui/button';
+import { ResultsDisplay } from '@/components/simulador/ResultsDisplay';
 
 const SimuladorPage = () => {
   const { calculateBessSize } = useBessSize();
