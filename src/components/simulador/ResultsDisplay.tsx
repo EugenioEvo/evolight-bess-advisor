@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -207,8 +206,9 @@ export function ResultsDisplay({ results, formValues }: ResultsDisplayProps) {
 }
 
 // Função simplificada para estimar economia anual
-function calculateEstimatedSavings(formValues: SimuladorFormValues, results: any): number {
+function calculateEstimatedSavings(formValues: SimuladorFormValues, results: { calculatedPowerKw: number; calculatedEnergyKwh: number }): number {
   let annualSavings = 0;
+  const totalInvestmentValue = calculateTotalInvestment(formValues, results);
   
   // Economia com peak shaving - estimativa simplificada
   if (formValues.usePeakShaving) {
@@ -242,11 +242,11 @@ function calculateEstimatedSavings(formValues: SimuladorFormValues, results: any
     annualSavings += backupValue;
   }
   
-  return Math.max(annualSavings, totalInvestment / (formValues.horizonYears * 0.9));
+  return Math.max(annualSavings, totalInvestmentValue / (formValues.horizonYears * 0.9));
 }
 
-// Simples simulação do "Total Investment" para uso na função de economia estimada
-const totalInvestment = (formValues: SimuladorFormValues, results: any): number => {
+// Função auxiliar para calcular investimento total
+function calculateTotalInvestment(formValues: SimuladorFormValues, results: { calculatedEnergyKwh: number }): number {
   const costPerKwh = formValues.bessInstallationCost || 1500;
   return results.calculatedEnergyKwh * costPerKwh;
-};
+}

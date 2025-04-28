@@ -1,24 +1,16 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useBessSize } from '@/hooks/useBessSize';
 import { toast } from "sonner";
 import { simuladorFormSchema, type SimuladorFormValues } from '@/schemas/simuladorSchema';
-import { ProjectInfo } from '@/components/simulador/ProjectInfo';
-import { BessSection } from '@/components/simulador/BessSection';
-import { PvSection } from '@/components/simulador/PvSection';
-import { TariffSection } from '@/components/simulador/TariffSection';
-import { DieselSection } from '@/components/simulador/DieselSection';
-import { FinancialSection } from '@/components/simulador/FinancialSection';
-import { ControlStrategies } from '@/components/simulador/ControlStrategies';
-import { ResultsDisplay } from '@/components/simulador/ResultsDisplay';
+import { HeaderSection } from '@/components/simulador/HeaderSection';
+import { FooterSection } from '@/components/simulador/FooterSection';
+import { SimuladorForm } from '@/components/simulador/SimuladorForm';
+import { AnalysisSection } from '@/components/simulador/AnalysisSection';
 
 const SimuladorPage = () => {
   const { calculateBessSize } = useBessSize();
@@ -273,7 +265,6 @@ const SimuladorPage = () => {
         description: `Potência: ${sizingResult.calculated_power_kw} kW, Capacidade: ${sizingResult.calculated_energy_kwh} kWh`
       });
       
-      // Switch to analysis tab after successful calculation
       setActiveTab("analise");
     } catch (error) {
       console.error('Error calculating BESS size:', error);
@@ -287,10 +278,7 @@ const SimuladorPage = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       <main className="flex-1 container py-6 px-4 md:py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-evolight-navy mb-2">Simulador BESS</h1>
-          <p className="text-gray-600">Configure e execute simulações de sistemas de armazenamento de energia por bateria.</p>
-        </div>
+        <HeaderSection />
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8">
@@ -308,66 +296,17 @@ const SimuladorPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <ProjectInfo form={form} />
-                    
-                    <Separator />
-                    
-                    <BessSection form={form} />
-                    
-                    <Separator />
-                    
-                    <PvSection form={form} />
-                    
-                    <Separator />
-                    
-                    <TariffSection form={form} />
-                    
-                    <Separator />
-                    
-                    <DieselSection form={form} />
-                    
-                    <Separator />
-                    
-                    <FinancialSection form={form} />
-                    
-                    <Separator />
-                    
-                    <ControlStrategies form={form} />
-                    
-                    <div className="flex justify-end pt-4">
-                      <Button type="submit">Dimensionar e Simular</Button>
-                    </div>
-                  </form>
-                </Form>
+                <SimuladorForm form={form} onSubmit={onSubmit} />
               </CardContent>
             </Card>
           </TabsContent>
           
           <TabsContent value="analise">
-            <Card>
-              <CardHeader>
-                <CardTitle>Análise & Dimensionamento</CardTitle>
-                <CardDescription>
-                  Processamento e análise técnico-financeira baseada nos dados fornecidos.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {simulationResults ? (
-                  <ResultsDisplay results={simulationResults} formValues={form.getValues()} />
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">
-                      Nenhum dimensionamento realizado. Por favor, preencha os dados na aba "Entrada de Dados" e clique em "Dimensionar e Simular".
-                    </p>
-                    <Button onClick={() => setActiveTab("dados")}>
-                      Ir para Entrada de Dados
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <AnalysisSection 
+              simulationResults={simulationResults} 
+              formValues={form.getValues()}
+              onChangeTab={setActiveTab}
+            />
           </TabsContent>
           
           <TabsContent value="resultados">
@@ -404,14 +343,9 @@ const SimuladorPage = () => {
         </Tabs>
       </main>
       
-      <footer className="bg-white py-4 border-t border-gray-200">
-        <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} Evolight Energia Inovadora. Todos os direitos reservados.
-        </div>
-      </footer>
+      <FooterSection />
     </div>
   );
 };
 
 export default SimuladorPage;
-
