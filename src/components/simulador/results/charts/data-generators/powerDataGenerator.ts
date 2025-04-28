@@ -52,12 +52,19 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     // Calculate net grid consumption
     const netGridKw = loadKw - pvKw - bessKw;
     
+    // Make sure we're working with numbers before using toFixed
+    // Add safety checks to ensure we're dealing with numbers
+    const loadKwNumber = typeof loadKw === 'number' ? loadKw : 0;
+    const pvKwNumber = typeof pvKw === 'number' ? pvKw : 0;
+    const bessKwNumber = typeof bessKw === 'number' ? bessKw : 0;
+    const netGridKwNumber = typeof netGridKw === 'number' ? netGridKw : 0;
+    
     hourlyData.push({
       hour: `${hour}:00`,
-      loadKw: parseFloat(loadKw.toFixed(1)),
-      pvKw: parseFloat(pvKw.toFixed(1)),
-      bessKw: parseFloat(bessKw.toFixed(1)),
-      gridKw: parseFloat(netGridKw.toFixed(1)),
+      loadKw: parseFloat(loadKwNumber.toFixed(1)),
+      pvKw: parseFloat(pvKwNumber.toFixed(1)),
+      bessKw: parseFloat(bessKwNumber.toFixed(1)),
+      gridKw: parseFloat(netGridKwNumber.toFixed(1)),
     });
   }
   
