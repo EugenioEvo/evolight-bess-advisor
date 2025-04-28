@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { ViabilityIndicator } from '../financial/ViabilityIndicator';
+import { DimensioningCard } from './DimensioningCard';
+import { PaybackCard } from './PaybackCard';
+import { SavingsCard } from './SavingsCard';
 
 interface SummaryDashboardProps {
   results: {
@@ -34,31 +36,24 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* Dimensionamento KPIs */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground mb-1">Dimensionamento</div>
-            <div className="text-2xl font-bold">{results.calculatedPowerKw.toFixed(1)} kW / {results.calculatedEnergyKwh.toFixed(1)} kWh</div>
-            <div className="text-xs text-muted-foreground mt-1">Razão E/P: {(results.calculatedEnergyKwh / results.calculatedPowerKw).toFixed(2)}</div>
-          </CardContent>
-        </Card>
+        <DimensioningCard 
+          powerKw={results.calculatedPowerKw} 
+          energyKwh={results.calculatedEnergyKwh}
+        />
 
         {/* Financeiro KPIs */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground mb-1">Payback Simples</div>
-            <div className="text-2xl font-bold">{paybackYears.toFixed(1)} anos</div>
-            <div className="text-xs text-muted-foreground mt-1">ROI: {((estimatedAnnualSavings * formValues.horizonYears) / totalInvestment * 100).toFixed(1)}%</div>
-          </CardContent>
-        </Card>
+        <PaybackCard 
+          paybackYears={paybackYears}
+          annualSavings={estimatedAnnualSavings}
+          totalInvestment={totalInvestment}
+          horizonYears={formValues.horizonYears}
+        />
 
         {/* Economia KPIs */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground mb-1">Economia Anual</div>
-            <div className="text-2xl font-bold">R$ {estimatedAnnualSavings.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</div>
-            <div className="text-xs text-muted-foreground mt-1">Modelo: {formValues.businessModel === 'turnkey' ? 'Compra Direta' : 'Locação/EAAS'}</div>
-          </CardContent>
-        </Card>
+        <SavingsCard
+          annualSavings={estimatedAnnualSavings}
+          businessModel={formValues.businessModel}
+        />
       </div>
     </div>
   );
