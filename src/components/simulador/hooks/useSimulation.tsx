@@ -21,17 +21,28 @@ export function useSimulation() {
     try {
       console.log("Submitting form values:", values);
       
-      // Create a basic load profile based on average demand
-      const baseLoad = values.avgPeakDemandKw > 0 ? values.avgPeakDemandKw : 50;
-      const maxLoad = values.maxPeakDemandKw > 0 ? values.maxPeakDemandKw : baseLoad * 2;
+      // Create a basic load profile based on the provided demand values
+      const peakLoad = values.avgPeakDemandKw > 0 ? values.avgPeakDemandKw : 50;
+      const offpeakLoad = values.avgOffpeakDemandKw > 0 ? values.avgOffpeakDemandKw : 40;
+      const maxPeakLoad = values.maxPeakDemandKw > 0 ? values.maxPeakDemandKw : peakLoad * 1.5;
+      const maxOffpeakLoad = values.maxOffpeakDemandKw > 0 ? values.maxOffpeakDemandKw : offpeakLoad * 1.5;
       
-      // Create a synthetic load profile with lower values during night, higher during day, and peak at evening
-      const load_profile = [
-        baseLoad * 0.7, baseLoad * 0.6, baseLoad * 0.5, baseLoad * 0.5, baseLoad * 0.6, baseLoad * 0.8, 
-        baseLoad * 1.0, baseLoad * 1.2, baseLoad * 1.4, baseLoad * 1.6, baseLoad * 1.8, baseLoad * 1.9,
-        baseLoad * 1.8, baseLoad * 1.7, baseLoad * 1.6, baseLoad * 1.6, baseLoad * 1.8, maxLoad * 0.9,
-        maxLoad, maxLoad * 0.9, maxLoad * 0.7, baseLoad * 1.4, baseLoad * 1.0, baseLoad * 0.8
-      ];
+      // Create a synthetic load profile with peak and off-peak periods
+      const load_profile = [];
+      for (let hour = 0; hour < 24; hour++) {
+        if (hour >= values.peakStartHour && hour <= values.peakEndHour) {
+          // Peak hours
+          load_profile.push(maxPeakLoad);
+        } else if (hour >= 7 && hour < values.peakStartHour) {
+          // Daytime hours
+          const daytimeFactor = 0.8 + 0.2 * Math.sin((hour - 7) / (values.peakStartHour - 7) * Math.PI);
+          load_profile.push(offpeakLoad + (peakLoad - offpeakLoad) * daytimeFactor);
+        } else {
+          // Night hours
+          const nightFactor = 0.6 + 0.4 * Math.cos(hour / 12 * Math.PI);
+          load_profile.push(offpeakLoad * nightFactor);
+        }
+      }
       
       // Calculate PV profile if applicable
       const pv_profile = values.hasPv && values.pvPowerKwp > 0 
@@ -45,7 +56,7 @@ export function useSimulation() {
       
       if (values.usePeakShaving) {
         if (values.peakShavingMethod === 'percentage') {
-          peakReductionKw = maxLoad * (values.peakShavingPercentage / 100);
+          peakReductionKw = maxPeakLoad * (values.peakShavingPercentage / 100);
         } else if (values.peakShavingMethod === 'reduction') {
           peakReductionKw = values.peakShavingTarget;
         } else if (values.peakShavingMethod === 'target') {
@@ -58,7 +69,7 @@ export function useSimulation() {
       let backupDurationH = undefined;
       
       if (values.useBackup) {
-        criticalLoadKw = values.criticalLoadKw > 0 ? values.criticalLoadKw : baseLoad * 0.5;
+        criticalLoadKw = values.criticalLoadKw > 0 ? values.criticalLoadKw : peakLoad * 0.5;
         backupDurationH = values.backupDurationHours > 0 ? values.backupDurationHours : 2;
       }
       
@@ -124,7 +135,7 @@ export function useSimulation() {
       const costPerKwh = values.bessInstallationCost || 1500;
       const totalInvestment = sizingResult.calculated_energy_kwh * costPerKwh;
       
-      // Simplified annual savings calculation (real calculation would be based on full simulation)
+      // Simplified annual savings calculation
       let annualSavings = 0;
       
       // Peak shaving savings (simplified)
@@ -138,10 +149,17 @@ export function useSimulation() {
       
       // Arbitrage savings (simplified)
       if (values.useArbitrage) {
-        const dailyDischarge = sizingResult.calculated_energy_kwh * 0.7; // Assume 70% daily cycling
+        // Calculate daily energy cycled based on average peak and off-peak consumption
+        const dailyPeakEnergy = values.avgDailyPeakConsumptionKwh > 0 
+          ? values.avgDailyPeakConsumptionKwh 
+          : peakLoad * (values.peakEndHour - values.peakStartHour + 1);
+          
+        const dailyCycleEnergy = Math.min(dailyPeakEnergy * 0.7, sizingResult.calculated_energy_kwh * 0.85);
+        
         const energyPriceDiff = (values.tePeak + values.tusdPeakKwh) - 
                                (values.teOffpeak + values.tusdOffpeakKwh);
-        annualSavings += dailyDischarge * energyPriceDiff * 22 * 12; // 22 business days/month
+                               
+        annualSavings += dailyCycleEnergy * energyPriceDiff * 22 * 12; // 22 business days/month
       }
       
       // Simple payback period

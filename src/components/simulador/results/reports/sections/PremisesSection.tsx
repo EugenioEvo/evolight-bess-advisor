@@ -25,15 +25,35 @@ export function PremisesSection({ formValues }: PremisesSectionProps) {
             <TableBody>
               <TableRow>
                 <TableCell>Tipo de Instalação</TableCell>
-                <TableCell>{formValues.installationType === 'industrial' ? 'Industrial' : 'Comercial'}</TableCell>
+                <TableCell>{
+                  formValues.installationType === 'industrial' ? 'Industrial' : 
+                  formValues.installationType === 'commercial' ? 'Comercial' : 
+                  formValues.installationType === 'residential' ? 'Residencial' : 'Outro'
+                }</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Demanda Média (kW)</TableCell>
+                <TableCell>Demanda Média na Ponta (kW)</TableCell>
                 <TableCell>{formValues.avgPeakDemandKw}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Demanda Máxima (kW)</TableCell>
+                <TableCell>Demanda Média Fora Ponta (kW)</TableCell>
+                <TableCell>{formValues.avgOffpeakDemandKw}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Demanda Máxima na Ponta (kW)</TableCell>
                 <TableCell>{formValues.maxPeakDemandKw}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Demanda Máxima Fora Ponta (kW)</TableCell>
+                <TableCell>{formValues.maxOffpeakDemandKw}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Consumo Mensal na Ponta (kWh)</TableCell>
+                <TableCell>{formValues.avgMonthlyPeakConsumptionKwh}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Consumo Mensal Fora Ponta (kWh)</TableCell>
+                <TableCell>{formValues.avgMonthlyOffpeakConsumptionKwh}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Grupo Tarifário</TableCell>

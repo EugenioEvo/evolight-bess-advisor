@@ -25,9 +25,13 @@ const SimuladorPage = () => {
       // Perfil de Consumo
       loadEntryMethod: "average",
       avgPeakDemandKw: 100,
+      avgOffpeakDemandKw: 80,
       maxPeakDemandKw: 150,
-      avgDailyConsumptionKwh: 2000,
-      avgMonthlyConsumptionKwh: 60000,
+      maxOffpeakDemandKw: 120,
+      avgDailyPeakConsumptionKwh: 400,
+      avgDailyOffpeakConsumptionKwh: 1600,
+      avgMonthlyPeakConsumptionKwh: 12000,
+      avgMonthlyOffpeakConsumptionKwh: 48000,
       
       // Parâmetros BESS
       bessCapacityKwh: 215,

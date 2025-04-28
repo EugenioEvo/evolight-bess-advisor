@@ -14,7 +14,7 @@ export function DimensioningCard({ powerKw, energyKwh }: DimensioningCardProps) 
     <DashboardCard
       title="Dimensionamento"
       value={`${powerKw.toFixed(1)} kW / ${energyKwh.toFixed(1)} kWh`}
-      subtitle={`Razão E/P: ${ratio.toFixed(2)}`}
+      subtitle={`Razão Energia/Potência: ${ratio.toFixed(2)}`}
     />
   );
 }

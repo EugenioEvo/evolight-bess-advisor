@@ -50,61 +50,127 @@ export function TariffSection({ form }: TariffSectionProps) {
           
           {form.watch("loadEntryMethod") === "average" && (
             <>
-              <FormField
-                control={form.control}
-                name="avgPeakDemandKw"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Demanda Média Ponta (kW)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="col-span-2">
+                <h5 className="text-sm font-medium mb-2 text-gray-700">Demanda (kW)</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="avgPeakDemandKw"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Média na Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="avgOffpeakDemandKw"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Média Fora Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="maxPeakDemandKw"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Máxima na Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="maxOffpeakDemandKw"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Máxima Fora Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               
-              <FormField
-                control={form.control}
-                name="maxPeakDemandKw"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Demanda Máxima Ponta (kW)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="avgDailyConsumptionKwh"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Consumo Médio Diário (kWh)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="avgMonthlyConsumptionKwh"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Consumo Médio Mensal (kWh)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="col-span-2">
+                <h5 className="text-sm font-medium mb-2 text-gray-700">Consumo (kWh)</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="avgDailyPeakConsumptionKwh"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Diário na Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="avgDailyOffpeakConsumptionKwh"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Diário Fora Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="avgMonthlyPeakConsumptionKwh"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mensal na Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="avgMonthlyOffpeakConsumptionKwh"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mensal Fora Ponta</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </>
           )}
           

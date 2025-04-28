@@ -8,17 +8,31 @@ export const simuladorFormSchema = z.object({
   
   // Perfil de Consumo
   loadEntryMethod: z.enum(["average", "upload"]).default("average"),
+  // Demanda
   avgPeakDemandKw: z.coerce.number()
-    .min(0, { message: "Demanda média deve ser maior ou igual a 0" })
+    .min(0, { message: "Demanda média na ponta deve ser maior ou igual a 0" })
+    .default(0),
+  avgOffpeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda média fora de ponta deve ser maior ou igual a 0" })
     .default(0),
   maxPeakDemandKw: z.coerce.number()
-    .min(0, { message: "Demanda máxima deve ser maior ou igual a 0" })
+    .min(0, { message: "Demanda máxima na ponta deve ser maior ou igual a 0" })
     .default(0),
-  avgDailyConsumptionKwh: z.coerce.number()
-    .min(0, { message: "Consumo diário deve ser maior ou igual a 0" })
+  maxOffpeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda máxima fora de ponta deve ser maior ou igual a 0" })
     .default(0),
-  avgMonthlyConsumptionKwh: z.coerce.number()
-    .min(0, { message: "Consumo mensal deve ser maior ou igual a 0" })
+  // Consumo
+  avgDailyPeakConsumptionKwh: z.coerce.number()
+    .min(0, { message: "Consumo diário na ponta deve ser maior ou igual a 0" })
+    .default(0),
+  avgDailyOffpeakConsumptionKwh: z.coerce.number()
+    .min(0, { message: "Consumo diário fora de ponta deve ser maior ou igual a 0" })
+    .default(0),
+  avgMonthlyPeakConsumptionKwh: z.coerce.number()
+    .min(0, { message: "Consumo mensal na ponta deve ser maior ou igual a 0" })
+    .default(0),
+  avgMonthlyOffpeakConsumptionKwh: z.coerce.number()
+    .min(0, { message: "Consumo mensal fora de ponta deve ser maior ou igual a 0" })
     .default(0),
   
   // Parâmetros BESS
