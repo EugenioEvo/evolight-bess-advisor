@@ -320,13 +320,11 @@ const SimuladorPage = () => {
               </CardHeader>
               <CardContent className="space-y-2">
                 {simulationResults ? (
-                  <div className="text-center text-gray-500 py-8">
-                    <p className="mb-4">
-                      Visualização detalhada e exportação de relatórios em desenvolvimento.
-                    </p>
-                    <p className="text-sm">
-                      Em breve: Gráficos interativos, simulação temporal, fluxo de caixa detalhado e exportação de relatório em PDF.
-                    </p>
+                  <div className="py-4">
+                    <ResultsDisplay 
+                      results={simulationResults} 
+                      formValues={form.getValues()} 
+                    />
                   </div>
                 ) : (
                   <div className="text-center py-12">
