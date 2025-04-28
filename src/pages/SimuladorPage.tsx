@@ -11,6 +11,7 @@ import { HeaderSection } from '@/components/simulador/HeaderSection';
 import { FooterSection } from '@/components/simulador/FooterSection';
 import { SimuladorForm } from '@/components/simulador/SimuladorForm';
 import { AnalysisSection } from '@/components/simulador/AnalysisSection';
+import { Button } from '@/components/ui/button';
 
 const SimuladorPage = () => {
   const { calculateBessSize } = useBessSize();
