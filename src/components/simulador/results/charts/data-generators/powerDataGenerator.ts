@@ -40,7 +40,9 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
       pvKw = pvPower * Math.sin((hour - 6) / 12 * Math.PI);
     }
     
-    // Create synthetic BESS profile (discharge during peak shaving period)
+    // Create synthetic BESS profile
+    // Positive values = discharge (providing energy)
+    // Negative values = charge (consuming energy)
     let bessKw = 0;
     if (isPeakShavingHour && formValues.usePeakShaving) {
       // Positive value for BESS discharging during peak shaving (supporting the grid)
@@ -57,22 +59,17 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
       bessKw = -batteryPower * 0.8;
     }
     
-    // Calculate net grid consumption (positive value means consuming from grid)
-    // Load minus PV generation minus BESS discharge (or plus BESS charging)
+    // Calculate grid power
+    // Positive values = consumption from grid
+    // Negative values = injection to grid (during peak shaving, when BESS + PV > load)
     const gridKw = loadKw - pvKw - bessKw;
-    
-    // Make sure we're working with numbers before using toFixed
-    const loadKwNumber = typeof loadKw === 'number' ? loadKw : 0;
-    const pvKwNumber = typeof pvKw === 'number' ? pvKw : 0;
-    const bessKwNumber = typeof bessKw === 'number' ? bessKw : 0;
-    const gridKwNumber = typeof gridKw === 'number' ? gridKw : 0;
     
     hourlyData.push({
       hour: `${hour}:00`,
-      loadKw: parseFloat(loadKwNumber.toFixed(1)),
-      pvKw: parseFloat(pvKwNumber.toFixed(1)),
-      bessKw: parseFloat(bessKwNumber.toFixed(1)),
-      gridKw: parseFloat(gridKwNumber.toFixed(1)),
+      loadKw: parseFloat(loadKw.toFixed(1)),
+      pvKw: parseFloat(pvKw.toFixed(1)),
+      bessKw: parseFloat(bessKw.toFixed(1)),
+      gridKw: parseFloat(gridKw.toFixed(1)),
     });
   }
   

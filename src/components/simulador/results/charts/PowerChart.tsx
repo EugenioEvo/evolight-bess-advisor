@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis, Legend } from "recharts";
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis, Legend, ReferenceLine } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 
@@ -16,6 +16,24 @@ interface PowerChartProps {
 }
 
 export function PowerChart({ data, formValues }: PowerChartProps) {
+  const getValueLabel = (value: number, type: string) => {
+    const absValue = Math.abs(value).toFixed(1);
+    
+    if (type === 'bessKw') {
+      return value >= 0 
+        ? `${absValue} kW (descarga)` 
+        : `${absValue} kW (carga)`;
+    }
+    
+    if (type === 'gridKw') {
+      return value >= 0 
+        ? `${absValue} kW (consumo)` 
+        : `${absValue} kW (injeção)`;
+    }
+    
+    return `${absValue} kW`;
+  };
+
   return (
     <ChartContainer
       config={{
@@ -32,10 +50,13 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
           label={{ value: 'kW', angle: -90, position: 'insideLeft' }} 
           domain={['auto', 'auto']} 
         />
+        <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
         <Tooltip 
           formatter={(value, name) => {
+            const numValue = Number(value);
+            const type = name as string;
             return [
-              `${Number(value).toFixed(1)} kW`, 
+              getValueLabel(numValue, type), 
               name === 'loadKw' ? 'Carga' : 
               name === 'pvKw' ? 'PV' : 
               name === 'bessKw' ? 'BESS' : 'Rede'
@@ -69,7 +90,6 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
           stroke="var(--color-bess)" 
           strokeWidth={2} 
           dot={false}
-          // Use a custom stroke dasharray for BESS to distinguish it better
           strokeDasharray={formValues.usePeakShaving ? "" : "5 5"}
         />
         <Line 
