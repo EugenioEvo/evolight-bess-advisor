@@ -106,6 +106,9 @@ const SimuladorPage = () => {
       peakShavingMethod: "percentage",
       peakShavingTarget: 0,
       peakShavingPercentage: 30,
+      peakShavingStartHour: 18,  // Valor padrão igual ao peakStartHour
+      peakShavingEndHour: 21,    // Valor padrão igual ao peakEndHour
+      peakShavingDurationHours: 3, // Duração padrão = 3 horas
       criticalLoadKw: 0,
       backupDurationHours: 2,
     },

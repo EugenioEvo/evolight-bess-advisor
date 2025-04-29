@@ -73,6 +73,11 @@ export function useSimulation() {
         backupDurationH = values.backupDurationHours > 0 ? values.backupDurationHours : 2;
       }
       
+      // Use the peak shaving schedule parameters
+      const peakShavingStartHour = values.peakShavingStartHour;
+      const peakShavingEndHour = values.peakShavingEndHour;
+      const peakShavingDurationHours = values.peakShavingDurationHours;
+      
       console.log("Sending to Edge Function:", {
         load_profile,
         pv_profile,
@@ -87,6 +92,9 @@ export function useSimulation() {
           peak_shaving_required: values.usePeakShaving,
           peak_shaving_target_kw: peakShavingTarget > 0 ? peakShavingTarget : undefined,
           peak_reduction_kw: peakReductionKw > 0 ? peakReductionKw : undefined,
+          peak_shaving_start_hour: peakShavingStartHour,
+          peak_shaving_end_hour: peakShavingEndHour,
+          peak_shaving_duration_hours: peakShavingDurationHours,
           arbitrage_required: values.useArbitrage,
           pv_optim_required: values.usePvOptim,
           grid_zero: values.pvPolicy === 'grid_zero',
@@ -115,6 +123,9 @@ export function useSimulation() {
           peak_shaving_required: values.usePeakShaving,
           peak_shaving_target_kw: peakShavingTarget > 0 ? peakShavingTarget : undefined,
           peak_reduction_kw: peakReductionKw > 0 ? peakReductionKw : undefined,
+          peak_shaving_start_hour: peakShavingStartHour,
+          peak_shaving_end_hour: peakShavingEndHour,
+          peak_shaving_duration_hours: peakShavingDurationHours,
           arbitrage_required: values.useArbitrage,
           pv_optim_required: values.usePvOptim,
           grid_zero: values.pvPolicy === 'grid_zero',

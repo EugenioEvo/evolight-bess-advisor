@@ -5,8 +5,8 @@ export function generateSoCData(formValues: SimuladorFormValues) {
   let currentSoc = formValues.bessInitialSoc;
   
   for (let hour = 0; hour < 24; hour++) {
-    // SoC slowly decreases during peak hours (usage)
-    if (hour >= formValues.peakStartHour && hour <= formValues.peakEndHour && formValues.usePeakShaving) {
+    // SoC decreases during peak shaving hours (discharge)
+    if (hour >= formValues.peakShavingStartHour && hour <= formValues.peakShavingEndHour && formValues.usePeakShaving) {
       currentSoc -= 10;
     } 
     // SoC increases during off-peak hours (charging)
@@ -19,7 +19,7 @@ export function generateSoCData(formValues: SimuladorFormValues) {
     }
     
     // Keep within limits
-    currentSoc = Math.max(formValues.bessMaxDod, Math.min(100, currentSoc));
+    currentSoc = Math.max(100 - formValues.bessMaxDod, Math.min(100, currentSoc));
     
     hourlyData.push({
       hour: `${hour}:00`,

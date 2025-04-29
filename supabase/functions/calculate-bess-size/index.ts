@@ -18,6 +18,9 @@ interface SizingParams {
   peak_shaving_required: boolean
   peak_shaving_target_kw?: number
   peak_reduction_kw?: number
+  peak_shaving_start_hour?: number
+  peak_shaving_end_hour?: number
+  peak_shaving_duration_hours?: number
   arbitrage_required: boolean
   pv_optim_required: boolean
   grid_zero: boolean
@@ -73,8 +76,25 @@ serve(async (req) => {
     const discharge_eff = bess_technical_params.discharge_eff;
     const charge_eff = bess_technical_params.charge_eff;
 
-    // Calculate peak hours per day
-    const peak_hours_per_day = tariff_structure.peak_end_hour - tariff_structure.peak_start_hour;
+    // Calculate peak shaving hours per day
+    const peak_shaving_start_hour = sizing_params.peak_shaving_start_hour !== undefined ? sizing_params.peak_shaving_start_hour : tariff_structure.peak_start_hour;
+    const peak_shaving_end_hour = sizing_params.peak_shaving_end_hour !== undefined ? sizing_params.peak_shaving_end_hour : tariff_structure.peak_end_hour;
+    const peak_shaving_hours = peak_shaving_end_hour - peak_shaving_start_hour + 1;
+    
+    // Use specified duration if available, or use the calculated hours if not
+    const peak_shaving_duration_hours = sizing_params.peak_shaving_duration_hours !== undefined ? 
+      sizing_params.peak_shaving_duration_hours : peak_shaving_hours;
+    
+    // Limit the duration to the available hours
+    const effective_peak_shaving_hours = Math.min(peak_shaving_duration_hours, peak_shaving_hours);
+
+    console.log("Peak shaving schedule:", {
+      peak_shaving_start_hour,
+      peak_shaving_end_hour, 
+      peak_shaving_hours,
+      peak_shaving_duration_hours,
+      effective_peak_shaving_hours
+    });
 
     // 1. Backup sizing
     if (sizing_params.backup_required) {
@@ -107,11 +127,16 @@ serve(async (req) => {
       }
 
       if (power_peak_shave > 0) {
-        const energy_peak_shave = (power_peak_shave * peak_hours_per_day) / discharge_eff;
+        const energy_peak_shave = (power_peak_shave * effective_peak_shaving_hours) / discharge_eff;
         required_power_kw = Math.max(required_power_kw, power_peak_shave);
         required_energy_kwh = Math.max(required_energy_kwh, energy_peak_shave);
         
-        console.log("Peak shaving sizing:", { power_peak_shave, energy_peak_shave, max_load });
+        console.log("Peak shaving sizing:", { 
+          power_peak_shave, 
+          energy_peak_shave, 
+          max_load,
+          effective_peak_shaving_hours 
+        });
       }
     }
 

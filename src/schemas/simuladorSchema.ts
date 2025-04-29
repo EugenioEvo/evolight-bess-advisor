@@ -112,6 +112,9 @@ export const simuladorFormSchema = z.object({
   peakShavingMethod: z.enum(["percentage", "reduction", "target"]).default("percentage"),
   peakShavingTarget: z.coerce.number().min(0).default(0),
   peakShavingPercentage: z.coerce.number().min(0).max(100).default(30),
+  peakShavingStartHour: z.coerce.number().min(0).max(23).default(18),  // Nova propriedade
+  peakShavingEndHour: z.coerce.number().min(0).max(23).default(21),    // Nova propriedade
+  peakShavingDurationHours: z.coerce.number().min(0).max(24).default(3), // Nova propriedade
   criticalLoadKw: z.coerce.number().min(0).default(0),
   backupDurationHours: z.coerce.number().min(0).default(2),
 });

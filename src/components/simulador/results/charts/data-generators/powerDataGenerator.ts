@@ -10,10 +10,14 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
   const pvPower = formValues.hasPv ? formValues.pvPowerKwp : 0;
   const peakStartHour = formValues.peakStartHour;
   const peakEndHour = formValues.peakEndHour;
+  const peakShavingStartHour = formValues.peakShavingStartHour;
+  const peakShavingEndHour = formValues.peakShavingEndHour;
   
   for (let hour = 0; hour < 24; hour++) {
     // Determine if current hour is peak
     const isPeakHour = hour >= peakStartHour && hour <= peakEndHour;
+    // Determine if current hour is in peak shaving period
+    const isPeakShavingHour = hour >= peakShavingStartHour && hour <= peakShavingEndHour;
     
     // Create synthetic load profile
     let loadKw;
@@ -36,9 +40,9 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
       pvKw = pvPower * Math.sin((hour - 6) / 12 * Math.PI);
     }
     
-    // Create synthetic BESS profile (discharge during peak)
+    // Create synthetic BESS profile (discharge during peak shaving period)
     let bessKw = 0;
-    if (hour >= peakStartHour && hour <= peakEndHour && formValues.usePeakShaving) {
+    if (isPeakShavingHour && formValues.usePeakShaving) {
       bessKw = formValues.peakShavingMethod === 'percentage' 
         ? maxPeakDemand * formValues.peakShavingPercentage / 100
         : formValues.peakShavingTarget;

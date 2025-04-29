@@ -112,7 +112,14 @@ export function ControlStrategies({ form }: ControlStrategiesProps) {
                       <FormItem>
                         <FormLabel>Hora de início (h)</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" max="23" step="1" {...field} />
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            max="23" 
+                            step="1" 
+                            {...field}
+                            value={field.value.toString()} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -126,7 +133,14 @@ export function ControlStrategies({ form }: ControlStrategiesProps) {
                       <FormItem>
                         <FormLabel>Hora de fim (h)</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" max="23" step="1" {...field} />
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            max="23" 
+                            step="1" 
+                            {...field}
+                            value={field.value.toString()} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -141,7 +155,14 @@ export function ControlStrategies({ form }: ControlStrategiesProps) {
                     <FormItem>
                       <FormLabel>Duração máxima diária (h)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="0" max="24" step="0.5" {...field} />
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          max="24" 
+                          step="0.5" 
+                          {...field}
+                          value={field.value.toString()} 
+                        />
                       </FormControl>
                       <FormDescription>
                         Tempo máximo de operação diária do BESS para peak shaving
