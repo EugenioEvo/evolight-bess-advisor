@@ -28,13 +28,58 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="hour" />
-        <YAxis label={{ value: 'kW', angle: -90, position: 'insideLeft' }} />
-        <Tooltip />
+        <YAxis 
+          label={{ value: 'kW', angle: -90, position: 'insideLeft' }} 
+          domain={['auto', 'auto']} 
+        />
+        <Tooltip 
+          formatter={(value, name) => {
+            return [
+              `${Number(value).toFixed(1)} kW`, 
+              name === 'loadKw' ? 'Carga' : 
+              name === 'pvKw' ? 'PV' : 
+              name === 'bessKw' ? 'BESS' : 'Rede'
+            ];
+          }}
+          labelFormatter={(label) => `Hora: ${label}`}
+        />
         <Legend />
-        <Line type="monotone" dataKey="loadKw" name="Carga" stroke="var(--color-load)" strokeWidth={2} dot={false} />
-        {formValues.hasPv && <Line type="monotone" dataKey="pvKw" name="PV" stroke="var(--color-pv)" strokeWidth={2} dot={false} />}
-        <Line type="monotone" dataKey="bessKw" name="BESS" stroke="var(--color-bess)" strokeWidth={2} dot={false} />
-        <Line type="monotone" dataKey="gridKw" name="Rede" stroke="var(--color-grid)" strokeWidth={2} dot={false} />
+        <Line 
+          type="monotone" 
+          dataKey="loadKw" 
+          name="Carga" 
+          stroke="var(--color-load)" 
+          strokeWidth={2} 
+          dot={false} 
+        />
+        {formValues.hasPv && (
+          <Line 
+            type="monotone" 
+            dataKey="pvKw" 
+            name="PV" 
+            stroke="var(--color-pv)" 
+            strokeWidth={2} 
+            dot={false} 
+          />
+        )}
+        <Line 
+          type="monotone" 
+          dataKey="bessKw" 
+          name="BESS" 
+          stroke="var(--color-bess)" 
+          strokeWidth={2} 
+          dot={false}
+          // Use a custom stroke dasharray for BESS to distinguish it better
+          strokeDasharray={formValues.usePeakShaving ? "" : "5 5"}
+        />
+        <Line 
+          type="monotone" 
+          dataKey="gridKw" 
+          name="Rede" 
+          stroke="var(--color-grid)" 
+          strokeWidth={2} 
+          dot={false} 
+        />
       </LineChart>
     </ChartContainer>
   );

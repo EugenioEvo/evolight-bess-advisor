@@ -43,32 +43,36 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     // Create synthetic BESS profile (discharge during peak shaving period)
     let bessKw = 0;
     if (isPeakShavingHour && formValues.usePeakShaving) {
-      bessKw = formValues.peakShavingMethod === 'percentage' 
-        ? maxPeakDemand * formValues.peakShavingPercentage / 100
-        : formValues.peakShavingTarget;
+      // Positive value for BESS discharging during peak shaving (supporting the grid)
+      if (formValues.peakShavingMethod === 'percentage') {
+        bessKw = maxPeakDemand * formValues.peakShavingPercentage / 100;
+      } else {
+        bessKw = formValues.peakShavingTarget;
+      }
       
+      // Ensure discharge doesn't exceed battery power
       if (bessKw > batteryPower) bessKw = batteryPower;
     } else if (hour >= 1 && hour <= 5 && formValues.useArbitrage) {
-      // Charging during off-peak
+      // Negative value for BESS charging during off-peak (consuming from the grid)
       bessKw = -batteryPower * 0.8;
     }
     
-    // Calculate net grid consumption
-    const netGridKw = loadKw - pvKw - bessKw;
+    // Calculate net grid consumption (positive value means consuming from grid)
+    // Load minus PV generation minus BESS discharge (or plus BESS charging)
+    const gridKw = loadKw - pvKw - bessKw;
     
     // Make sure we're working with numbers before using toFixed
-    // Add safety checks to ensure we're dealing with numbers
     const loadKwNumber = typeof loadKw === 'number' ? loadKw : 0;
     const pvKwNumber = typeof pvKw === 'number' ? pvKw : 0;
     const bessKwNumber = typeof bessKw === 'number' ? bessKw : 0;
-    const netGridKwNumber = typeof netGridKw === 'number' ? netGridKw : 0;
+    const gridKwNumber = typeof gridKw === 'number' ? gridKw : 0;
     
     hourlyData.push({
       hour: `${hour}:00`,
       loadKw: parseFloat(loadKwNumber.toFixed(1)),
       pvKw: parseFloat(pvKwNumber.toFixed(1)),
       bessKw: parseFloat(bessKwNumber.toFixed(1)),
-      gridKw: parseFloat(netGridKwNumber.toFixed(1)),
+      gridKw: parseFloat(gridKwNumber.toFixed(1)),
     });
   }
   
