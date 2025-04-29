@@ -2,6 +2,7 @@
 import React from 'react';
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis, Area } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
+import { useTheme } from "next-themes";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 
 interface SocChartProps {
@@ -15,6 +16,14 @@ interface SocChartProps {
 export function SocChart({ data, formValues }: SocChartProps) {
   // Determinar o SoC mínimo baseado no DoD máximo (se disponível)
   const minSoc = formValues ? 100 - formValues.bessMaxDod : 15;
+  const { resolvedTheme } = useTheme();
+  
+  // Choose colors based on theme
+  const colors = {
+    soc: resolvedTheme === 'dark' ? "#c4b5fd" : "#8b5cf6",
+    socArea: resolvedTheme === 'dark' ? "#8b5cf6" : "#c4b5fd",
+    minSoc: resolvedTheme === 'dark' ? "#fca5a5" : "#ef4444",
+  };
   
   return (
     <div className="w-full h-full">
