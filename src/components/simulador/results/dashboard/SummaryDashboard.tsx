@@ -20,8 +20,9 @@ interface SummaryDashboardProps {
 }
 
 export function SummaryDashboard({ results, formValues }: SummaryDashboardProps) {
-  // Cálculo de unidades BESS necessárias (arredondando para cima, cada unidade é 108kW)
-  const bessUnitsRequired = Math.ceil(results.calculatedPowerKw / 108);
+  // Cálculo de unidades BESS necessárias (sempre pelo menos 1 unidade, ou o valor inteiro imediatamente inferior)
+  const rawUnitsRequired = results.calculatedPowerKw / 108;
+  const bessUnitsRequired = rawUnitsRequired < 1 ? 1 : Math.floor(rawUnitsRequired);
   
   // Cálculo do investimento total considerando unidades BESS indivisíveis
   let totalInvestment = 0;
