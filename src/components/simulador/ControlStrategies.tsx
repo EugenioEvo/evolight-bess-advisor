@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -97,6 +97,60 @@ export function ControlStrategies({ form }: ControlStrategiesProps) {
                   )}
                 />
               )}
+              
+              {/* Novos campos para configuração do horário de peak shaving */}
+              <div className="space-y-4 border-t pt-4 mt-4">
+                <FormDescription>
+                  Configuração de Horário para Peak Shaving
+                </FormDescription>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="peakShavingStartHour"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hora de início (h)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="23" step="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="peakShavingEndHour"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hora de fim (h)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="23" step="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="peakShavingDurationHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duração máxima diária (h)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" max="24" step="0.5" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Tempo máximo de operação diária do BESS para peak shaving
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           )}
           
