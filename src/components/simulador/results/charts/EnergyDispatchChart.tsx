@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer, ComposedChart, XAxis, YAxis, CartesianGrid, 
@@ -7,7 +6,7 @@ import {
 import { useTheme } from "next-themes";
 import { Tooltip as UITooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { useMediaQuery } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface DispatchPoint {
   hour: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23;
@@ -36,7 +35,7 @@ export function EnergyDispatchChart({
   title = "Despacho de Energia (24h)" 
 }: EnergyDispatchChartProps) {
   const { resolvedTheme } = useTheme();
-  const isMobile = useMediaQuery("(max-width: 640px)");
+  const isMobile = useIsMobile();
   
   const chartColors = useMemo(() => {
     return {
@@ -73,16 +72,15 @@ export function EnergyDispatchChart({
         // Calculate grid if not provided
         grid: point.grid !== undefined ? 
           point.grid : 
-          Math.max(0, point.load - point.pv - point.diesel - point.discharge + point.charge),
-        // Create negDis for stacking (negative discharge)
-        negDis: -point.discharge
+          Math.max(0, point.load - point.pv - point.diesel - point.discharge + point.charge)
       };
     });
     
-    // Format hour for display
+    // Add negDis property to all points for stacking
     return fullData.map(point => ({
       ...point,
       hourLabel: `${point.hour}:00`,
+      negDis: -point.discharge // Add this for proper stacking in the chart
     }));
   }, [data]);
 
