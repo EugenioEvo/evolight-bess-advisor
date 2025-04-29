@@ -12,7 +12,7 @@ export function useChartColors() {
       discharge: resolvedTheme === 'dark' ? '#b3edb9' : '#98e3a1',
       charge: resolvedTheme === 'dark' ? '#b8d1ff' : '#a1c4ff',
       grid: resolvedTheme === 'dark' ? '#ffc6b3' : '#ffb39a',
-      load: '#000000',
+      load: resolvedTheme === 'dark' ? '#000000' : '#000000',
       soc: resolvedTheme === 'dark' ? '#b280e3' : '#7423c6',
       peakArea: resolvedTheme === 'dark' ? 'rgba(255,100,100,0.05)' : 'rgba(255,100,100,0.1)',
       chargeArea: resolvedTheme === 'dark' ? 'rgba(100,100,255,0.05)' : 'rgba(100,100,255,0.1)'

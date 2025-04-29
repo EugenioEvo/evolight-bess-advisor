@@ -10,7 +10,7 @@ export const ChartAxes: React.FC<ChartAxesProps> = ({ isMobile }) => {
   return (
     <>
       <XAxis 
-        dataKey="hourLabel" 
+        dataKey="hour" 
         interval={isMobile ? 3 : 1}
         tick={{ fill: 'var(--foreground)' }}
         tickLine={{ stroke: 'var(--foreground)' }}
