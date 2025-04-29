@@ -1,5 +1,5 @@
 
-import { DispatchPoint } from '../EnergyDispatchChart';
+import { DispatchPoint } from '../EnergyDispatchChartTypes';
 
 interface PowerDataPoint {
   hour: string;
