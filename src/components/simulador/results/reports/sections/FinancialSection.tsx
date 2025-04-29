@@ -14,8 +14,7 @@ interface FinancialSectionProps {
 }
 
 export function FinancialSection({ results, formValues }: FinancialSectionProps) {
-  const costPerKwh = formValues.bessInstallationCost || 1500;
-  const totalInvestment = results.calculatedEnergyKwh * costPerKwh;
+  const totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
   const estimatedAnnualSavings = results.annualSavings || 0;
   const paybackYears = results.paybackYears || 0;
   
@@ -29,10 +28,6 @@ export function FinancialSection({ results, formValues }: FinancialSectionProps)
               <h4 className="font-medium mb-2">Investimento</h4>
               <Table>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>Custo BESS (R$/kWh)</TableCell>
-                    <TableCell>R$ {costPerKwh.toLocaleString('pt-BR')}</TableCell>
-                  </TableRow>
                   <TableRow>
                     <TableCell>Investimento Total</TableCell>
                     <TableCell>R$ {totalInvestment.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</TableCell>

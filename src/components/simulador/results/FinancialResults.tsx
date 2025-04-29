@@ -17,8 +17,7 @@ interface FinancialResultsProps {
 }
 
 export function FinancialResults({ results, formValues }: FinancialResultsProps) {
-  const costPerKwh = formValues.bessInstallationCost || 1500;
-  const totalInvestment = results.calculatedEnergyKwh * costPerKwh;
+  const totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
   const estimatedAnnualSavings = results.annualSavings || 0;
   const paybackYears = results.paybackYears || 0;
   const isViable = results.isViable !== undefined 
