@@ -3,22 +3,25 @@
   inData = { profile:[kW…24], params:{ ... } }
   out    = { chartData:[{hour,…}], kpi:{dieselSavedKWh, dieselSavedLiters, gridKWh, costBaseline, costReal, economy} }
 */
+
+export interface ComputeDispatchParams {
+  chargePower: number;
+  dischargePower: number;
+  bessEnergy: number;
+  bessEff: number;
+  soc0: number;
+  socMin: number;
+  chargeWindow: [number, number];
+  dischargeWindow: [number, number];
+  dieselCost: number;
+  dieselYield: number;
+  gridCostFora: number;
+  gridCostPonta: number;
+}
+
 export function computeDispatch(inData: {
   profile: number[],
-  params: {
-    chargePower: number,
-    dischargePower: number,
-    bessEnergy: number,
-    bessEff: number,
-    soc0: number,
-    socMin: number,
-    chargeWindow: [number, number],
-    dischargeWindow: [number, number],
-    dieselCost: number,
-    dieselYield: number,
-    gridCostFora: number,
-    gridCostPonta: number
-  }
+  params: ComputeDispatchParams
 }) {
   const { profile, params: p } = inData;
   const H = 24;

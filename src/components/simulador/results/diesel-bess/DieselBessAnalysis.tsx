@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
@@ -13,6 +12,7 @@ import { z } from 'zod';
 import { computeDispatch } from './computeDispatch';
 import { useToast } from '@/hooks/use-toast';
 
+// Define the schema with non-optional values to match the computeDispatch expectations
 const dieselBessSchema = z.object({
   chargePower: z.number().min(1).default(300),
   dischargePower: z.number().min(1).default(700),
@@ -93,13 +93,25 @@ export function DieselBessAnalysis() {
   };
 
   const onSubmit = (values: DieselBessFormValues) => {
-    // Convert percentage values to decimal for computation
+    // Ensure all required values are present by creating a new object with all required properties
+    const computeParams = {
+      chargePower: values.chargePower,
+      dischargePower: values.dischargePower,
+      bessEnergy: values.bessEnergy,
+      bessEff: values.bessEff,
+      soc0: values.soc0,
+      socMin: values.socMin,
+      chargeWindow: values.chargeWindow as [number, number],
+      dischargeWindow: values.dischargeWindow as [number, number],
+      dieselCost: values.dieselCost,
+      dieselYield: values.dieselYield,
+      gridCostFora: values.gridCostFora,
+      gridCostPonta: values.gridCostPonta
+    };
+    
     const result = computeDispatch({
       profile: values.loadProfile,
-      params: {
-        ...values,
-        // These values are already in decimal form from the sliders
-      }
+      params: computeParams
     });
     
     setChartData(result.chartData);
