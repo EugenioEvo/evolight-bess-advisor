@@ -20,9 +20,17 @@ interface SummaryDashboardProps {
 }
 
 export function SummaryDashboard({ results, formValues }: SummaryDashboardProps) {
-  // Cálculo de unidades BESS necessárias (sempre pelo menos 1 unidade, ou o valor inteiro imediatamente inferior)
-  const rawUnitsRequired = results.calculatedPowerKw / 108;
-  const bessUnitsRequired = rawUnitsRequired < 1 ? 1 : Math.floor(rawUnitsRequired);
+  // Ajuste para garantir que os valores não ultrapassem as capacidades do módulo
+  const moduleMaxPower = 108; // kW
+  const moduleMaxEnergy = 215; // kWh
+  
+  // Limitar para os valores do módulo BESS
+  const adjustedPower = Math.min(results.calculatedPowerKw, moduleMaxPower);
+  const adjustedEnergy = Math.min(results.calculatedEnergyKwh, moduleMaxEnergy);
+  
+  // Cálculo de unidades BESS necessárias (sempre pelo menos 1 unidade, ou o valor inteiro imediatamente superior)
+  const rawUnitsRequired = Math.ceil(results.calculatedPowerKw / moduleMaxPower);
+  const bessUnitsRequired = Math.max(1, rawUnitsRequired);
   
   // Cálculo do investimento total considerando unidades BESS indivisíveis
   let totalInvestment = 0;
@@ -35,7 +43,7 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
     totalInvestment = bessUnitsRequired * formValues.bessUnitCost;
   } else {
     // Caso contrário, use o custo por kWh
-    totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
+    totalInvestment = adjustedEnergy * (formValues.bessInstallationCost || 1500);
   }
   
   const estimatedAnnualSavings = results.annualSavings || 0;
@@ -53,8 +61,8 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* Dimensionamento KPIs */}
         <DimensioningCard 
-          powerKw={results.calculatedPowerKw} 
-          energyKwh={results.calculatedEnergyKwh}
+          powerKw={adjustedPower} 
+          energyKwh={adjustedEnergy}
           bessUnits={bessUnitsRequired}
         />
 

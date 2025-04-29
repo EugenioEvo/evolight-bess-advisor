@@ -23,17 +23,25 @@ interface ChartTabsProps {
 }
 
 export function ChartTabs({ results, formValues }: ChartTabsProps) {
+  // Ajuste aqui: usar os valores fixos dos módulos quando os resultados são acima do esperado
+  const bessPower = formValues.bessPowerKw || 108;
+  const bessCapacity = formValues.bessCapacityKwh || 215;
+  
+  // Garantir que não exceda os valores do módulo padrão
+  const usedPower = Math.min(results.calculatedPowerKw, bessPower);
+  const usedCapacity = Math.min(results.calculatedEnergyKwh, bessCapacity);
+  
   const powerData = generatePowerData(
     formValues, 
-    results.calculatedEnergyKwh, 
-    results.calculatedPowerKw
+    usedCapacity, 
+    usedPower
   );
   
   const socData = generateSoCData(formValues);
   
   const cashFlowData = generateCashFlowData(
     formValues, 
-    results.calculatedEnergyKwh, 
+    usedCapacity, 
     results.annualSavings
   );
   
