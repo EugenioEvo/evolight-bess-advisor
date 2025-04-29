@@ -12,6 +12,7 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
   const peakEndHour = formValues.peakEndHour;
   const peakShavingStartHour = formValues.peakShavingStartHour;
   const peakShavingEndHour = formValues.peakShavingEndHour;
+  const dieselPower = formValues.hasDiesel ? formValues.dieselPowerKw : 0;
   
   for (let hour = 0; hour < 24; hour++) {
     // Determine if current hour is peak
@@ -40,6 +41,13 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
       pvKw = pvPower * Math.sin((hour - 6) / 12 * Math.PI);
     }
     
+    // Create synthetic Diesel Generator profile
+    // Generator runs during peak shaving if diesel is enabled
+    let dieselKw = 0;
+    if (isPeakShavingHour && formValues.hasDiesel) {
+      dieselKw = Math.min(dieselPower, loadKw * 0.3); // Generator provides up to 30% of load during peak shaving
+    }
+    
     // Create synthetic BESS profile
     // Positive values = discharge (providing energy)
     // Negative values = charge (consuming energy)
@@ -59,10 +67,10 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
       bessKw = -batteryPower * 0.8;
     }
     
-    // Calculate grid power
+    // Calculate grid power - remaining load after accounting for PV, BESS, and diesel
     // Positive values = consumption from grid
-    // Negative values = injection to grid (during peak shaving, when BESS + PV > load)
-    const gridKw = loadKw - pvKw - bessKw;
+    // Negative values = injection to grid
+    const gridKw = loadKw - pvKw - bessKw - dieselKw;
     
     hourlyData.push({
       hour: `${hour}:00`,
@@ -70,6 +78,7 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
       pvKw: parseFloat(pvKw.toFixed(1)),
       bessKw: parseFloat(bessKw.toFixed(1)),
       gridKw: parseFloat(gridKw.toFixed(1)),
+      dieselKw: parseFloat(dieselKw.toFixed(1)),
     });
   }
   

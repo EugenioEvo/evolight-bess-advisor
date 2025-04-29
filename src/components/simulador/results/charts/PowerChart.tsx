@@ -11,6 +11,7 @@ interface PowerChartProps {
     pvKw: number;
     bessKw: number;
     gridKw: number;
+    dieselKw?: number;
   }>;
   formValues: SimuladorFormValues;
 }
@@ -31,8 +32,18 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
         : `${absValue} kW (injeção)`;
     }
     
+    if (type === 'dieselKw') {
+      return `${absValue} kW (gerador)`;
+    }
+    
     return `${absValue} kW`;
   };
+
+  // Identifica o período de peak shaving para destacar no gráfico
+  const peakShavingPeriod = data.map(entry => {
+    const hour = parseInt(entry.hour.split(':')[0]);
+    return hour >= formValues.peakShavingStartHour && hour <= formValues.peakShavingEndHour;
+  });
 
   return (
     <ChartContainer
@@ -41,14 +52,19 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
         pv: { theme: { light: "#f97316", dark: "#f97316" } },
         bess: { theme: { light: "#8b5cf6", dark: "#c4b5fd" } },
         grid: { theme: { light: "#0ea5e9", dark: "#7dd3fc" } },
+        diesel: { theme: { light: "#ef4444", dark: "#fca5a5" } },
       }}
     >
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="hour" />
+        <XAxis 
+          dataKey="hour" 
+          tick={{fill: 'var(--foreground)'}}
+        />
         <YAxis 
-          label={{ value: 'kW', angle: -90, position: 'insideLeft' }} 
+          label={{ value: 'kW', angle: -90, position: 'insideLeft', fill: 'var(--foreground)' }} 
           domain={['auto', 'auto']} 
+          tick={{fill: 'var(--foreground)'}}
         />
         <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
         <Tooltip 
@@ -59,10 +75,15 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
               getValueLabel(numValue, type), 
               name === 'loadKw' ? 'Carga' : 
               name === 'pvKw' ? 'PV' : 
-              name === 'bessKw' ? 'BESS' : 'Rede'
+              name === 'bessKw' ? 'BESS' :
+              name === 'dieselKw' ? 'Gerador' : 'Rede'
             ];
           }}
-          labelFormatter={(label) => `Hora: ${label}`}
+          labelFormatter={(label, payload) => {
+            const hourIndex = data.findIndex(item => item.hour === label);
+            const isPeakShaving = hourIndex >= 0 ? peakShavingPeriod[hourIndex] : false;
+            return `Hora: ${label}${isPeakShaving ? ' (Peak Shaving)' : ''}`;
+          }}
         />
         <Legend />
         <Line 
@@ -92,6 +113,16 @@ export function PowerChart({ data, formValues }: PowerChartProps) {
           dot={false}
           strokeDasharray={formValues.usePeakShaving ? "" : "5 5"}
         />
+        {formValues.hasDiesel && (
+          <Line 
+            type="monotone" 
+            dataKey="dieselKw" 
+            name="Gerador" 
+            stroke="var(--color-diesel)" 
+            strokeWidth={2} 
+            dot={false} 
+          />
+        )}
         <Line 
           type="monotone" 
           dataKey="gridKw" 
