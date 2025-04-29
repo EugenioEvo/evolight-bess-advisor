@@ -54,7 +54,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
       <TabsContent value="soc">
         <Card className="h-[400px]">
           <CardContent className="p-4 h-full">
-            <SocChart data={socData} />
+            <SocChart data={socData} formValues={formValues} />
           </CardContent>
         </Card>
       </TabsContent>

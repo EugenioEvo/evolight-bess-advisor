@@ -49,28 +49,29 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     }
     
     // Create synthetic BESS profile
-    // Positive values = discharge (providing energy)
-    // Negative values = charge (consuming energy)
+    // IMPORTANTE: VALORES INVERTIDOS CONFORME SOLICITADO
+    // Valores negativos = descarga (fornecendo energia)
+    // Valores positivos = carga (consumindo energia)
     let bessKw = 0;
     if (isPeakShavingHour && formValues.usePeakShaving) {
-      // Positive value for BESS discharging during peak shaving (supporting the grid)
+      // Valor negativo para BESS descarregando durante peak shaving (apoiando a rede)
       if (formValues.peakShavingMethod === 'percentage') {
-        bessKw = maxPeakDemand * formValues.peakShavingPercentage / 100;
+        bessKw = -maxPeakDemand * formValues.peakShavingPercentage / 100;
       } else {
-        bessKw = formValues.peakShavingTarget;
+        bessKw = -formValues.peakShavingTarget;
       }
       
       // Ensure discharge doesn't exceed battery power
-      if (bessKw > batteryPower) bessKw = batteryPower;
+      if (bessKw < -batteryPower) bessKw = -batteryPower;
     } else if (hour >= 1 && hour <= 5 && formValues.useArbitrage) {
-      // Negative value for BESS charging during off-peak (consuming from the grid)
-      bessKw = -batteryPower * 0.8;
+      // Valor positivo para BESS carregando durante off-peak (consumindo da rede)
+      bessKw = batteryPower * 0.8;
     }
     
     // Calculate grid power - remaining load after accounting for PV, BESS, and diesel
-    // Positive values = consumption from grid
-    // Negative values = injection to grid
-    const gridKw = loadKw - pvKw - bessKw - dieselKw;
+    // Valores positivos = consumo da rede
+    // Valores negativos = injeção na rede
+    const gridKw = loadKw + bessKw - pvKw - dieselKw;
     
     // Ensure all values are numbers before calling toFixed
     const loadKwFinal = typeof loadKw === 'number' ? parseFloat(loadKw.toFixed(1)) : 0;
