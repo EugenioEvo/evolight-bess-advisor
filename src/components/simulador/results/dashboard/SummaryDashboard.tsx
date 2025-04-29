@@ -20,8 +20,23 @@ interface SummaryDashboardProps {
 }
 
 export function SummaryDashboard({ results, formValues }: SummaryDashboardProps) {
-  const costPerKwh = formValues.bessInstallationCost || 1500;
-  const totalInvestment = results.calculatedEnergyKwh * costPerKwh;
+  // Cálculo de unidades BESS necessárias (arredondando para cima, cada unidade é 108kW)
+  const bessUnitsRequired = Math.ceil(results.calculatedPowerKw / 108);
+  
+  // Cálculo do investimento total considerando unidades BESS indivisíveis
+  let totalInvestment = 0;
+  
+  if (formValues.capexCost > 0) {
+    // Se forneceu um custo total manual, use esse valor
+    totalInvestment = formValues.capexCost;
+  } else if (formValues.bessUnitCost > 0) {
+    // Se forneceu custo por unidade BESS, calcule baseado no número de unidades
+    totalInvestment = bessUnitsRequired * formValues.bessUnitCost;
+  } else {
+    // Caso contrário, use o custo por kWh
+    totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
+  }
+  
   const estimatedAnnualSavings = results.annualSavings || 0;
   const paybackYears = results.paybackYears || 0;
   const isViable = results.isViable !== undefined 
@@ -39,6 +54,7 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
         <DimensioningCard 
           powerKw={results.calculatedPowerKw} 
           energyKwh={results.calculatedEnergyKwh}
+          bessUnits={bessUnitsRequired}
         />
 
         {/* Financeiro KPIs */}

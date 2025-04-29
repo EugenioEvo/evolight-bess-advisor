@@ -88,6 +88,7 @@ export const simuladorFormSchema = z.object({
   businessModel: z.enum(["turnkey", "eaas"]).default("turnkey"),
   capexCost: z.coerce.number().min(0).default(0),
   bessInstallationCost: z.coerce.number().min(0).default(1500),
+  bessUnitCost: z.coerce.number().min(0).default(300000),
   annualOmCost: z.coerce.number().min(0).default(2),
   setupCost: z.coerce.number().min(0).default(0),
   annualServiceCost: z.coerce.number().min(0).default(0),

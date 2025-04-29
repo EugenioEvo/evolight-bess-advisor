@@ -5,16 +5,15 @@ import { DashboardCard } from './DashboardCard';
 interface DimensioningCardProps {
   powerKw: number;
   energyKwh: number;
+  bessUnits?: number;
 }
 
-export function DimensioningCard({ powerKw, energyKwh }: DimensioningCardProps) {
-  const ratio = energyKwh / powerKw;
-  
+export function DimensioningCard({ powerKw, energyKwh, bessUnits }: DimensioningCardProps) {
   return (
     <DashboardCard
-      title="Dimensionamento"
-      value={`${powerKw.toFixed(1)} kW / ${energyKwh.toFixed(1)} kWh`}
-      subtitle={`Razão Energia/Potência: ${ratio.toFixed(2)}`}
+      title="Dimensionamento BESS"
+      value={`${energyKwh.toFixed(1)} kWh`}
+      subtitle={`${powerKw.toFixed(1)} kW${bessUnits ? ` | ${bessUnits} unidades` : ''}`}
     />
   );
 }

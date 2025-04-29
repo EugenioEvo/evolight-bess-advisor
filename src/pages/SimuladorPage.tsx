@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -82,6 +81,7 @@ const SimuladorPage = () => {
       businessModel: "turnkey",
       capexCost: 0,
       bessInstallationCost: 1500,
+      bessUnitCost: 300000,
       annualOmCost: 2,
       setupCost: 0,
       annualServiceCost: 0,

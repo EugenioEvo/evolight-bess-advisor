@@ -8,6 +8,7 @@ import { MetricsTable } from './financial/MetricsTable';
 interface FinancialResultsProps {
   results: {
     calculatedEnergyKwh: number;
+    calculatedPowerKw: number;
     paybackYears?: number;
     annualSavings?: number;
     roi?: number;
@@ -17,9 +18,25 @@ interface FinancialResultsProps {
 }
 
 export function FinancialResults({ results, formValues }: FinancialResultsProps) {
-  const totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
+  // Cálculo de unidades BESS necessárias (arredondando para cima, cada unidade é 108kW)
+  const bessUnitsRequired = Math.ceil(results.calculatedPowerKw / 108);
+  
+  // Cálculo do investimento total considerando unidades BESS indivisíveis
+  let totalInvestment = 0;
+  
+  if (formValues.capexCost > 0) {
+    // Se forneceu um custo total manual, use esse valor
+    totalInvestment = formValues.capexCost;
+  } else if (formValues.bessUnitCost > 0) {
+    // Se forneceu custo por unidade BESS, calcule baseado no número de unidades
+    totalInvestment = bessUnitsRequired * formValues.bessUnitCost;
+  } else {
+    // Caso contrário, use o custo por kWh
+    totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
+  }
+  
   const estimatedAnnualSavings = results.annualSavings || 0;
-  const paybackYears = results.paybackYears || 0;
+  const paybackYears = results.paybackYears || (estimatedAnnualSavings > 0 ? totalInvestment / estimatedAnnualSavings : 0);
   const isViable = results.isViable !== undefined 
     ? results.isViable 
     : (paybackYears > 0 && paybackYears < formValues.horizonYears);
@@ -28,6 +45,11 @@ export function FinancialResults({ results, formValues }: FinancialResultsProps)
     {
       label: "Investimento Total",
       value: `R$ ${totalInvestment.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}`,
+      highlight: true
+    },
+    {
+      label: "Unidades BESS (108kW)",
+      value: `${bessUnitsRequired} un`,
       highlight: true
     },
     {
