@@ -14,6 +14,9 @@ interface SizingParams {
   peak_shaving_required: boolean
   peak_shaving_target_kw?: number
   peak_reduction_kw?: number
+  peak_shaving_start_hour?: number
+  peak_shaving_end_hour?: number
+  peak_shaving_duration_hours?: number
   arbitrage_required: boolean
   pv_optim_required: boolean
   grid_zero: boolean
