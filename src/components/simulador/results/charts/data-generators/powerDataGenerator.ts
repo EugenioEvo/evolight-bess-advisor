@@ -21,7 +21,7 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     const isPeakShavingHour = hour >= peakShavingStartHour && hour <= peakShavingEndHour;
     
     // Create synthetic load profile
-    let loadKw;
+    let loadKw = 0; // Initialize with a default numeric value
     if (isPeakHour) {
       // Peak hours - use peak demand values
       loadKw = maxPeakDemand;
@@ -72,13 +72,20 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     // Negative values = injection to grid
     const gridKw = loadKw - pvKw - bessKw - dieselKw;
     
+    // Ensure all values are numbers before calling toFixed
+    const loadKwFinal = typeof loadKw === 'number' ? parseFloat(loadKw.toFixed(1)) : 0;
+    const pvKwFinal = typeof pvKw === 'number' ? parseFloat(pvKw.toFixed(1)) : 0;
+    const bessKwFinal = typeof bessKw === 'number' ? parseFloat(bessKw.toFixed(1)) : 0;
+    const gridKwFinal = typeof gridKw === 'number' ? parseFloat(gridKw.toFixed(1)) : 0;
+    const dieselKwFinal = typeof dieselKw === 'number' ? parseFloat(dieselKw.toFixed(1)) : 0;
+    
     hourlyData.push({
       hour: `${hour}:00`,
-      loadKw: parseFloat(loadKw.toFixed(1)),
-      pvKw: parseFloat(pvKw.toFixed(1)),
-      bessKw: parseFloat(bessKw.toFixed(1)),
-      gridKw: parseFloat(gridKw.toFixed(1)),
-      dieselKw: parseFloat(dieselKw.toFixed(1)),
+      loadKw: loadKwFinal,
+      pvKw: pvKwFinal,
+      bessKw: bessKwFinal,
+      gridKw: gridKwFinal,
+      dieselKw: dieselKwFinal,
     });
   }
   
