@@ -73,21 +73,7 @@ export function FinancialSection({ form }: FinancialSectionProps) {
       </div>
       
       {form.watch("businessModel") === "turnkey" ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <FormField
-            control={form.control}
-            name="bessInstallationCost"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Custo BESS Instalado (R$/kWh)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="100" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <FormField
             control={form.control}
             name="capexCost"
@@ -97,9 +83,6 @@ export function FinancialSection({ form }: FinancialSectionProps) {
                 <FormControl>
                   <Input type="number" step="1000" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Opcional. Se preenchido, substitui o cálculo baseado em R$/kWh.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
