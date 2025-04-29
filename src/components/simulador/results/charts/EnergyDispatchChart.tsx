@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer, ComposedChart, XAxis, YAxis, CartesianGrid, 
@@ -76,11 +77,15 @@ export function EnergyDispatchChart({
       };
     });
     
-    // Add negDis property to all points for stacking
+    // Add negDis property and other calculated fields to all points for visualization
     return fullData.map(point => ({
       ...point,
       hourLabel: `${point.hour}:00`,
-      negDis: -point.discharge // Add this for proper stacking in the chart
+      negDis: -point.discharge, // Negative discharge for proper stacking
+      
+      // The total load line should always show the original load
+      // (We're not modifying the load value itself)
+      totalLoad: point.load
     }));
   }, [data]);
 
@@ -287,7 +292,7 @@ export function EnergyDispatchChart({
               name="BESS (carga)"
             />
             
-            {/* Lines */}
+            {/* Load line - always showing the original load */}
             <Line 
               yAxisId="left" 
               dataKey="load" 
