@@ -44,7 +44,8 @@ export function computeDispatch(inData: {
         discharge = Array(H).fill(0),
         diesel = Array(H).fill(0),
         grid = Array(H).fill(0),
-        soc = Array(H).fill(0);
+        soc = Array(H).fill(0),
+        pv = Array(H).fill(0); // Added PV array for future use
 
   for(let h = 0; h < H; h++) {
     let l = load[h] || 0;
@@ -86,7 +87,8 @@ export function computeDispatch(inData: {
       charge: charge[h],
       discharge: discharge[h],
       soc: soc[h],
-      dieselRef: dieselBaseline[h]
+      dieselRef: dieselBaseline[h],
+      pv: pv[h] // Added PV field (currently always 0)
     });
   }
 

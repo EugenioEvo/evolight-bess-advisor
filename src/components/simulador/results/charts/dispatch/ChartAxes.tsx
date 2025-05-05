@@ -11,20 +11,30 @@ export const ChartAxes: React.FC<ChartAxesProps> = ({ isMobile }) => {
     <>
       <XAxis 
         dataKey="hour" 
-        interval={isMobile ? 3 : 1}
-        tick={{ fill: 'var(--foreground)' }}
+        interval={isMobile ? 2 : 1}
+        tick={{ 
+          fill: 'var(--foreground)',
+          fontSize: isMobile ? 10 : 12 
+        }}
         tickLine={{ stroke: 'var(--foreground)' }}
       />
       
       <YAxis 
         yAxisId="left" 
+        domain={[
+          (dataMin: number) => Math.min(0, dataMin),
+          (dataMax: number) => dataMax * 1.1
+        ]}
         label={{ 
           value: "Potência (kW)", 
           angle: -90, 
           position: "insideLeft",
           fill: 'var(--foreground)'
         }}
-        tick={{ fill: 'var(--foreground)' }}
+        tick={{ 
+          fill: 'var(--foreground)',
+          fontSize: 12 
+        }}
         tickLine={{ stroke: 'var(--foreground)' }}
       />
       
@@ -38,7 +48,10 @@ export const ChartAxes: React.FC<ChartAxesProps> = ({ isMobile }) => {
           position: "insideRight",
           fill: 'var(--foreground)'
         }}
-        tick={{ fill: 'var(--foreground)' }}
+        tick={{ 
+          fill: 'var(--foreground)',
+          fontSize: 12 
+        }}
         tickLine={{ stroke: 'var(--foreground)' }}
       />
     </>

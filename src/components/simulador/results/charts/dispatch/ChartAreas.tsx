@@ -17,23 +17,23 @@ interface ChartAreasProps {
 export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
   return (
     <>
-      {/* Stacked areas (sources) */}
+      {/* Ordem: grid → cargaBESS → descargaBESS → diesel → pv */}
       <Area 
         yAxisId="left" 
-        dataKey="pv" 
+        dataKey="grid" 
         stackId="src" 
-        fill={chartColors.pv} 
+        fill={chartColors.grid} 
         stroke="none"
-        name="Fotovoltaico"
+        name="Rede"
       />
       
       <Area 
         yAxisId="left" 
-        dataKey="diesel" 
+        dataKey="charge" 
         stackId="src" 
-        fill={chartColors.diesel} 
+        fill={chartColors.charge} 
         stroke="none"
-        name="Diesel"
+        name="BESS (carga)"
       />
       
       <Area 
@@ -47,20 +47,20 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
       
       <Area 
         yAxisId="left" 
-        dataKey="grid" 
+        dataKey="diesel" 
         stackId="src" 
-        fill={chartColors.grid} 
+        fill={chartColors.diesel} 
         stroke="none"
-        name="Rede"
+        name="Diesel"
       />
       
-      {/* Non-stacked BESS charging */}
       <Area 
         yAxisId="left" 
-        dataKey="charge" 
-        fill={chartColors.charge} 
+        dataKey="pv" 
+        stackId="src" 
+        fill={chartColors.pv} 
         stroke="none"
-        name="BESS (carga)"
+        name="Fotovoltaico"
       />
       
       {/* Load line - always showing the original load */}
