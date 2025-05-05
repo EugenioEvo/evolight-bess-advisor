@@ -10,7 +10,7 @@ export function useProcessedDispatchData(data: DispatchPoint[]) {
     }));
 
     const merged = fill.map((row, h) => {
-      const d = data.find(p => p.hour === h) ?? {};
+      const d = data.find(p => p.hour === h) ?? row;
       const discharge = Number(d.discharge ?? 0);
 
       return {
