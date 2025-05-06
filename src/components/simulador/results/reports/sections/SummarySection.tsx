@@ -18,7 +18,10 @@ export function SummarySection({ results, formValues }: SummarySectionProps) {
   const costPerKwh = formValues.bessInstallationCost || 1500;
   const totalInvestment = results.calculatedEnergyKwh * costPerKwh;
   const paybackYears = results.paybackYears || 0;
-  const roiPercentage = ((estimatedAnnualSavings * formValues.horizonYears) / totalInvestment * 100);
+  // Add null check for calculations that might result in NaN or null values
+  const roiPercentage = isNaN(((estimatedAnnualSavings * formValues.horizonYears) / totalInvestment * 100)) 
+    ? 0 
+    : ((estimatedAnnualSavings * formValues.horizonYears) / totalInvestment * 100);
   
   return (
     <AccordionItem value="summary">
@@ -28,8 +31,8 @@ export function SummarySection({ results, formValues }: SummarySectionProps) {
           <p>
             O sistema de armazenamento de energia (BESS) dimensionado para{' '}
             <span className="font-medium">{formValues.projectName || "este projeto"}</span>{' '}
-            possui capacidade de <span className="font-medium">{results.calculatedEnergyKwh.toFixed(1)} kWh</span> e potência de{' '}
-            <span className="font-medium">{results.calculatedPowerKw.toFixed(1)} kW</span>, 
+            possui capacidade de <span className="font-medium">{(results.calculatedEnergyKwh || 0).toFixed(1)} kWh</span> e potência de{' '}
+            <span className="font-medium">{(results.calculatedPowerKw || 0).toFixed(1)} kW</span>, 
             composto por baterias de tecnologia{' '}
             <span className="font-medium">
               {formValues.bessTechnology === 'lfp' ? 'Lítio Ferro Fosfato (LFP)' : 'Lítio NMC'}
@@ -37,7 +40,7 @@ export function SummarySection({ results, formValues }: SummarySectionProps) {
           </p>
           
           <p>
-            A análise financeira indica um <span className="font-medium">payback simples de {paybackYears.toFixed(1)} anos</span>, 
+            A análise financeira indica um <span className="font-medium">payback simples de {(paybackYears).toFixed(1)} anos</span>, 
             com economia anual estimada em{' '}
             <span className="font-medium">
               R$ {estimatedAnnualSavings.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}

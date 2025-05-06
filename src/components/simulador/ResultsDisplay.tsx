@@ -7,6 +7,7 @@ import { InteractiveCharts } from './results/charts/InteractiveCharts';
 import { DetailedReport } from './results/reports/DetailedReport';
 import { ExportButtons } from './results/export/ExportButtons';
 import { SensitivityAnalysis } from './results/sensitivity/SensitivityAnalysis';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface ResultsDisplayProps {
   results: {
@@ -22,6 +23,20 @@ interface ResultsDisplayProps {
 }
 
 export function ResultsDisplay({ results, formValues }: ResultsDisplayProps) {
+  const hasValidResults = results && 
+    (results.calculatedPowerKw !== null || results.calculatedEnergyKwh !== null);
+  
+  if (!hasValidResults) {
+    return (
+      <Alert>
+        <AlertTitle>Resultados não disponíveis</AlertTitle>
+        <AlertDescription>
+          Não há resultados de simulação disponíveis. Por favor, execute uma simulação primeiro.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <SummaryDashboard results={results} formValues={formValues} />

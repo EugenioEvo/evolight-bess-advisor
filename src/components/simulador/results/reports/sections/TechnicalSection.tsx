@@ -1,79 +1,132 @@
 
 import React from 'react';
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateRequiredModules, calculateActualCapacity } from "@/config/bessModuleConfig";
 
 interface TechnicalSectionProps {
   results: {
-    calculatedPowerKw: number;
     calculatedEnergyKwh: number;
+    calculatedPowerKw: number;
   };
   formValues: SimuladorFormValues;
 }
 
 export function TechnicalSection({ results, formValues }: TechnicalSectionProps) {
-  // Calculate efficiency metrics
-  const roundTripEfficiency = formValues.bessEfficiency;
-  const epRatio = results.calculatedEnergyKwh / results.calculatedPowerKw;
-  const estimatedCyclesPerYear = formValues.usePeakShaving ? 
-    (formValues.useArbitrage ? 365 : 300) : 
-    (formValues.useArbitrage ? 180 : 130);
-  const estimatedDegradation = formValues.bessAnnualDegradation * formValues.bessLifetime;
-
+  // Make sure we have default values if results are null
+  const calculatedPowerKw = results.calculatedPowerKw || 0;
+  const calculatedEnergyKwh = results.calculatedEnergyKwh || 0;
+  
+  // Calculate required number of modules
+  const bessUnitsRequired = calculateRequiredModules(calculatedPowerKw, calculatedEnergyKwh);
+  
+  // Get actual capacity based on module count
+  const actualCapacity = calculateActualCapacity(bessUnitsRequired);
+  
   return (
     <AccordionItem value="technical">
-      <AccordionTrigger className="font-medium">Detalhes Técnicos</AccordionTrigger>
+      <AccordionTrigger className="font-medium">Especificações Técnicas</AccordionTrigger>
       <AccordionContent>
-        <div className="py-2">
-          <h4 className="font-medium mb-2">Especificações do BESS</h4>
+        <div className="py-2 space-y-4">
+          <h4 className="text-lg font-medium">Especificações do Sistema BESS</h4>
+          
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Parâmetro</TableHead>
-                <TableHead>Valor</TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell>Potência (kW)</TableCell>
-                <TableCell>{results.calculatedPowerKw.toFixed(1)}</TableCell>
+                <TableCell className="font-medium">Unidades BESS</TableCell>
+                <TableCell>{bessUnitsRequired} unidades</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Capacidade (kWh)</TableCell>
-                <TableCell>{results.calculatedEnergyKwh.toFixed(1)}</TableCell>
+                <TableCell className="font-medium">Potência por Unidade</TableCell>
+                <TableCell>{MODULE_POWER_KW} kW</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Razão E/P</TableCell>
-                <TableCell>{epRatio.toFixed(2)}</TableCell>
+                <TableCell className="font-medium">Capacidade por Unidade</TableCell>
+                <TableCell>{MODULE_ENERGY_KWH} kWh</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Eficiência Round-Trip</TableCell>
-                <TableCell>{roundTripEfficiency}%</TableCell>
+                <TableCell className="font-medium">Potência Total</TableCell>
+                <TableCell>{actualCapacity.powerKw.toFixed(0)} kW</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Profundidade de Descarga Máxima</TableCell>
+                <TableCell className="font-medium">Capacidade Total</TableCell>
+                <TableCell>{actualCapacity.energyKwh.toFixed(0)} kWh</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Tecnologia da Bateria</TableCell>
+                <TableCell>
+                  {formValues.bessTechnology === 'lfp' ? 'Lítio Ferro Fosfato (LFP)' : 'Lítio NMC'}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Eficiência Roundtrip</TableCell>
+                <TableCell>{formValues.bessEfficiency}%</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Profundidade de Descarga (DoD) Máxima</TableCell>
                 <TableCell>{formValues.bessMaxDod}%</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Tecnologia</TableCell>
-                <TableCell>{formValues.bessTechnology === 'lfp' ? 'LFP (Lítio Ferro Fosfato)' : 'NMC'}</TableCell>
+                <TableCell className="font-medium">Expectativa de Vida Útil</TableCell>
+                <TableCell>{formValues.bessLifetime} anos</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Degradação Anual</TableCell>
+                <TableCell className="font-medium">Degradação Anual</TableCell>
                 <TableCell>{formValues.bessAnnualDegradation}%</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Autodescarga Diária</TableCell>
+                <TableCell>{formValues.bessDailySelfdischarge}%</TableCell>
               </TableRow>
             </TableBody>
           </Table>
           
-          {/* Ciclos de vida e detalhes de operação estimados */}
-          <div className="mt-4">
-            <h4 className="font-medium mb-2">Operação Estimada</h4>
-            <p>Ciclos diários estimados: {formValues.usePeakShaving && formValues.useArbitrage ? '1-2' : formValues.usePeakShaving ? '1' : '0.5'}</p>
-            <p>Ciclos anuais estimados: ~{estimatedCyclesPerYear}</p>
-            <p>Vida útil estimada: ~{formValues.bessLifetime} anos</p>
-            <p>Degradação ao final da vida útil: ~{estimatedDegradation.toFixed(1)}%</p>
-          </div>
+          {formValues.useBackup && (
+            <>
+              <h4 className="text-lg font-medium mt-6">Backup de Energia</h4>
+              <p>
+                O sistema foi dimensionado para fornecer backup de energia de{' '}
+                <strong>{formValues.backupDurationHours} horas</strong> para cargas críticas de{' '}
+                <strong>{formValues.criticalLoadKw} kW</strong>.
+              </p>
+            </>
+          )}
+          
+          {formValues.usePeakShaving && (
+            <>
+              <h4 className="text-lg font-medium mt-6">Redução de Demanda na Ponta</h4>
+              <p>
+                O sistema foi configurado para reduzir{' '}
+                {formValues.peakShavingMethod === 'percentage' ? (
+                  <strong>{formValues.peakShavingPercentage}% da demanda na ponta</strong>
+                ) : (
+                  <strong>a demanda na ponta para {formValues.peakShavingTarget} kW</strong>
+                )}{' '}
+                durante o período de ponta ({formValues.peakStartHour}h às {formValues.peakEndHour}h).
+              </p>
+            </>
+          )}
+          
+          {formValues.useArbitrage && (
+            <>
+              <h4 className="text-lg font-medium mt-6">Arbitragem de Energia</h4>
+              <p>
+                O sistema foi configurado para realizar arbitragem de energia, carregando durante períodos 
+                de tarifa baixa e descarregando durante períodos de tarifa alta.
+              </p>
+            </>
+          )}
+          
+          {formValues.hasPv && formValues.usePvOptim && (
+            <>
+              <h4 className="text-lg font-medium mt-6">Integração com Sistema Fotovoltaico</h4>
+              <p>
+                O sistema foi dimensionado para otimizar o uso da energia gerada pelo sistema fotovoltaico 
+                de {formValues.pvPowerKwp} kWp.
+              </p>
+            </>
+          )}
         </div>
       </AccordionContent>
     </AccordionItem>
