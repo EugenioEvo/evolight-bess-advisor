@@ -26,6 +26,11 @@ export function buildSizingParams(values: SimuladorFormValues) {
     criticalLoadKw = values.criticalLoadKw > 0 ? values.criticalLoadKw : values.avgPeakDemandKw * 0.5;
     backupDurationH = values.backupDurationHours > 0 ? values.backupDurationHours : 2;
   }
+
+  // Determine the tariff modality based on form values
+  const modality = values.tarifaryGroup === "groupA" 
+    ? values.modalityA 
+    : "conventional";
   
   // Build and return the full parameter object
   return {
@@ -33,7 +38,8 @@ export function buildSizingParams(values: SimuladorFormValues) {
     pv_profile: undefined, // Will be filled separately
     tariff_structure: {
       peak_start_hour: values.peakStartHour,
-      peak_end_hour: values.peakEndHour
+      peak_end_hour: values.peakEndHour,
+      modality: modality
     },
     sizing_params: {
       backup_required: values.useBackup,
