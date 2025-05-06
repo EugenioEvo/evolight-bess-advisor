@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateRequiredModules } from "@/config/bessModuleConfig";
 
 interface TechnicalResultsProps {
   results: {
@@ -13,14 +14,11 @@ interface TechnicalResultsProps {
 }
 
 export function TechnicalResults({ results, formValues }: TechnicalResultsProps) {
-  // BESS module specifications
-  const MODULE_POWER_KW = 108; // kW
-  const MODULE_ENERGY_KWH = 215; // kWh
-  
   // Calculate required number of modules
-  const modulesByPower = Math.ceil(results.calculatedPowerKw / MODULE_POWER_KW);
-  const modulesByEnergy = Math.ceil(results.calculatedEnergyKwh / MODULE_ENERGY_KWH);
-  const bessUnitsRequired = Math.max(modulesByPower, modulesByEnergy, 1); // At least 1 unit
+  const bessUnitsRequired = calculateRequiredModules(
+    results.calculatedPowerKw,
+    results.calculatedEnergyKwh
+  );
   
   // Calculate actual power and energy from the number of modules
   const actualPowerKw = bessUnitsRequired * MODULE_POWER_KW;

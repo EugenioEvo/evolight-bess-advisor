@@ -2,6 +2,10 @@
 // Module sizing functionality
 import { BessSizeResult } from "./types.ts";
 
+// BESS module specifications
+const MODULE_POWER_KW = 108;
+const MODULE_ENERGY_KWH = 215;
+
 /**
  * Apply buffer factor and ensure minimum sizes for BESS
  * @param required_power_kw - The calculated required power
@@ -41,10 +45,6 @@ export function applyIndivisibleModuleRule(
   power_kw: number,
   energy_kwh: number
 ): BessSizeResult {
-  // BESS module specifications
-  const MODULE_POWER_KW = 108; // Standard module power
-  const MODULE_ENERGY_KWH = 215; // Standard module energy
-  
   // Calculate required number of modules (always round up to ensure capacity meets requirements)
   const modules_by_power = Math.ceil(power_kw / MODULE_POWER_KW);
   const modules_by_energy = Math.ceil(energy_kwh / MODULE_ENERGY_KWH);

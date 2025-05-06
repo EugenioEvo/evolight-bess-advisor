@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { DashboardCard } from './DashboardCard';
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateActualCapacity } from "@/config/bessModuleConfig";
 
 interface DimensioningCardProps {
   powerKw: number;
@@ -10,17 +11,15 @@ interface DimensioningCardProps {
 
 export function DimensioningCard({ powerKw, energyKwh, bessUnits }: DimensioningCardProps) {
   // Calculate the actual power and energy based on indivisible module units if bessUnits is provided
-  const MODULE_POWER_KW = 108;
-  const MODULE_ENERGY_KWH = 215;
-  
-  const displayPower = bessUnits ? bessUnits * MODULE_POWER_KW : powerKw;
-  const displayEnergy = bessUnits ? bessUnits * MODULE_ENERGY_KWH : energyKwh;
+  const displayValues = bessUnits 
+    ? calculateActualCapacity(bessUnits)
+    : { powerKw, energyKwh };
   
   return (
     <DashboardCard
       title="Dimensionamento BESS"
-      value={`${displayEnergy.toFixed(0)} kWh`}
-      subtitle={`${displayPower.toFixed(0)} kW${bessUnits ? ` | ${bessUnits} unidade${bessUnits > 1 ? 's' : ''}` : ''}`}
+      value={`${displayValues.energyKwh.toFixed(0)} kWh`}
+      subtitle={`${displayValues.powerKw.toFixed(0)} kW${bessUnits ? ` | ${bessUnits} unidade${bessUnits > 1 ? 's' : ''}` : ''}`}
     />
   );
 }

@@ -5,6 +5,7 @@ import { ViabilityIndicator } from '../financial/ViabilityIndicator';
 import { DimensioningCard } from './DimensioningCard';
 import { PaybackCard } from './PaybackCard';
 import { SavingsCard } from './SavingsCard';
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateRequiredModules, calculateActualCapacity } from "@/config/bessModuleConfig";
 
 interface SummaryDashboardProps {
   results: {
@@ -20,18 +21,16 @@ interface SummaryDashboardProps {
 }
 
 export function SummaryDashboard({ results, formValues }: SummaryDashboardProps) {
-  // BESS module specifications
-  const MODULE_POWER_KW = 108; // kW
-  const MODULE_ENERGY_KWH = 215; // kWh
-  
-  // Calculate required number of modules based on both power and energy
-  const modulesByPower = Math.ceil(results.calculatedPowerKw / MODULE_POWER_KW);
-  const modulesByEnergy = Math.ceil(results.calculatedEnergyKwh / MODULE_ENERGY_KWH);
-  const bessUnitsRequired = Math.max(modulesByPower, modulesByEnergy, 1); // At least 1 unit
+  // Calculate required number of modules
+  const bessUnitsRequired = calculateRequiredModules(
+    results.calculatedPowerKw,
+    results.calculatedEnergyKwh
+  );
   
   // Calculate actual power and energy from the number of modules
-  const actualPowerKw = bessUnitsRequired * MODULE_POWER_KW;
-  const actualEnergyKwh = bessUnitsRequired * MODULE_ENERGY_KWH;
+  const actualCapacity = calculateActualCapacity(bessUnitsRequired);
+  const actualPowerKw = actualCapacity.powerKw;
+  const actualEnergyKwh = actualCapacity.energyKwh;
   
   // Cálculo do investimento total considerando unidades BESS indivisíveis
   let totalInvestment = 0;

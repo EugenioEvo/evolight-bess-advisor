@@ -1,4 +1,5 @@
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateRequiredModules, calculateActualCapacity } from "@/config/bessModuleConfig";
 
 /**
  * Calculate annual savings based on simulation parameters
@@ -42,9 +43,11 @@ export function calculateFinancialMetrics(
     ? values.maxPeakDemandKw * (values.peakShavingPercentage / 100)
     : values.peakShavingTarget || values.maxPeakDemandKw * 0.3;
   
-  // Calculate number of BESS units required
-  const rawUnitsRequired = powerKw / 108;
-  const bessUnitsRequired = rawUnitsRequired < 1 ? 1 : Math.floor(rawUnitsRequired);
+  // Calculate number of BESS units required using the common utility
+  const bessUnitsRequired = calculateRequiredModules(powerKw, energyKwh);
+  
+  // Calculate actual capacity based on number of modules
+  const actualCapacity = calculateActualCapacity(bessUnitsRequired);
   
   // Calculate total investment
   let totalInvestment = 0;
@@ -56,8 +59,8 @@ export function calculateFinancialMetrics(
     // If provided a cost per BESS unit, calculate based on number of units
     totalInvestment = bessUnitsRequired * values.bessUnitCost;
   } else {
-    // Otherwise, use cost per kWh
-    totalInvestment = energyKwh * (values.bessInstallationCost || 1500);
+    // Otherwise, use cost per kWh based on actual energy capacity
+    totalInvestment = actualCapacity.energyKwh * (values.bessInstallationCost || 1500);
   }
   
   // Calculate annual savings

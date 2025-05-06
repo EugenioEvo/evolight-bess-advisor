@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { ViabilityIndicator } from './financial/ViabilityIndicator';
 import { MetricsTable } from './financial/MetricsTable';
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateRequiredModules } from "@/config/bessModuleConfig";
 
 interface FinancialResultsProps {
   results: {
@@ -18,14 +19,11 @@ interface FinancialResultsProps {
 }
 
 export function FinancialResults({ results, formValues }: FinancialResultsProps) {
-  // Define module specifications
-  const MODULE_POWER_KW = 108;
-  const MODULE_ENERGY_KWH = 215;
-  
   // Calculate required number of modules based on both power and energy requirements
-  const modulesByPower = Math.ceil(results.calculatedPowerKw / MODULE_POWER_KW);
-  const modulesByEnergy = Math.ceil(results.calculatedEnergyKwh / MODULE_ENERGY_KWH);
-  const bessUnitsRequired = Math.max(modulesByPower, modulesByEnergy);
+  const bessUnitsRequired = calculateRequiredModules(
+    results.calculatedPowerKw,
+    results.calculatedEnergyKwh
+  );
   
   // Calculate actual power and energy based on indivisible modules
   const actualPowerKw = bessUnitsRequired * MODULE_POWER_KW;
@@ -59,7 +57,7 @@ export function FinancialResults({ results, formValues }: FinancialResultsProps)
       highlight: true
     },
     {
-      label: "Unidades BESS (108kW/215kWh)",
+      label: `Unidades BESS (${MODULE_POWER_KW}kW/${MODULE_ENERGY_KWH}kWh)`,
       value: `${bessUnitsRequired} un`,
       highlight: true
     },
