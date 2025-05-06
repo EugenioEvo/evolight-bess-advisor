@@ -35,6 +35,47 @@ export function applyBufferAndMinimumSizes(
 }
 
 /**
+ * Apply indivisible module rule to BESS sizing
+ * @param power_kw - The calculated power in kW
+ * @param energy_kwh - The calculated energy in kWh
+ * @returns The adjusted power and energy based on indivisible module sizes
+ */
+export function applyIndivisibleModuleRule(
+  power_kw: number,
+  energy_kwh: number
+): BessSizeResult {
+  // BESS module specifications
+  const MODULE_POWER_KW = 108; // Standard module power
+  const MODULE_ENERGY_KWH = 215; // Standard module energy
+  
+  // Calculate required number of modules (always round up to ensure capacity meets requirements)
+  const modules_by_power = Math.ceil(power_kw / MODULE_POWER_KW);
+  const modules_by_energy = Math.ceil(energy_kwh / MODULE_ENERGY_KWH);
+  
+  // Choose the larger number to ensure both power and energy requirements are met
+  const required_modules = Math.max(modules_by_power, modules_by_energy);
+  
+  // Calculate final power and energy based on module count
+  const adjusted_power_kw = required_modules * MODULE_POWER_KW;
+  const adjusted_energy_kwh = required_modules * MODULE_ENERGY_KWH;
+  
+  console.log("Indivisible module sizing:", { 
+    original_power_kw: power_kw, 
+    original_energy_kwh: energy_kwh,
+    modules_by_power,
+    modules_by_energy,
+    required_modules,
+    adjusted_power_kw,
+    adjusted_energy_kwh
+  });
+  
+  return { 
+    final_power_kw: adjusted_power_kw, 
+    final_energy_kwh: adjusted_energy_kwh 
+  };
+}
+
+/**
  * Combine sizing requirements from different sizing strategies
  * @param powerRequirements - Array of power requirements from different strategies
  * @param energyRequirements - Array of energy requirements from different strategies
@@ -287,9 +328,20 @@ export function calculateBessSize(
   console.log("Combined requirements:", { power_kw, energy_kwh });
 
   // Apply buffer factor and ensure minimum sizes
-  return applyBufferAndMinimumSizes(
+  const bufferedResult = applyBufferAndMinimumSizes(
     power_kw,
     energy_kwh,
     sizing_params?.sizing_buffer_factor
   );
+  
+  // Apply indivisible module rule
+  const finalResult = applyIndivisibleModuleRule(
+    bufferedResult.final_power_kw,
+    bufferedResult.final_energy_kwh
+  );
+  
+  return {
+    calculated_power_kw: finalResult.final_power_kw,
+    calculated_energy_kwh: finalResult.final_energy_kwh
+  };
 }

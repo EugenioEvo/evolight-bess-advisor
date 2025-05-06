@@ -18,9 +18,18 @@ interface FinancialResultsProps {
 }
 
 export function FinancialResults({ results, formValues }: FinancialResultsProps) {
-  // Cálculo de unidades BESS necessárias (sempre pelo menos 1 unidade, ou o valor inteiro imediatamente inferior)
-  const rawUnitsRequired = results.calculatedPowerKw / 108;
-  const bessUnitsRequired = rawUnitsRequired < 1 ? 1 : Math.floor(rawUnitsRequired);
+  // Define module specifications
+  const MODULE_POWER_KW = 108;
+  const MODULE_ENERGY_KWH = 215;
+  
+  // Calculate required number of modules based on both power and energy requirements
+  const modulesByPower = Math.ceil(results.calculatedPowerKw / MODULE_POWER_KW);
+  const modulesByEnergy = Math.ceil(results.calculatedEnergyKwh / MODULE_ENERGY_KWH);
+  const bessUnitsRequired = Math.max(modulesByPower, modulesByEnergy);
+  
+  // Calculate actual power and energy based on indivisible modules
+  const actualPowerKw = bessUnitsRequired * MODULE_POWER_KW;
+  const actualEnergyKwh = bessUnitsRequired * MODULE_ENERGY_KWH;
   
   // Cálculo do investimento total considerando unidades BESS indivisíveis
   let totalInvestment = 0;
@@ -32,8 +41,9 @@ export function FinancialResults({ results, formValues }: FinancialResultsProps)
     // Se forneceu custo por unidade BESS, calcule baseado no número de unidades
     totalInvestment = bessUnitsRequired * formValues.bessUnitCost;
   } else {
-    // Caso contrário, use o custo por kWh
-    totalInvestment = results.calculatedEnergyKwh * (formValues.bessInstallationCost || 1500);
+    // Se nenhum dos valores acima foi fornecido, use o custo por kWh
+    // Considerando a energia real baseada nos módulos indivisíveis
+    totalInvestment = actualEnergyKwh * (formValues.bessInstallationCost || 1500);
   }
   
   const estimatedAnnualSavings = results.annualSavings || 0;
@@ -49,8 +59,18 @@ export function FinancialResults({ results, formValues }: FinancialResultsProps)
       highlight: true
     },
     {
-      label: "Unidades BESS (108kW)",
+      label: "Unidades BESS (108kW/215kWh)",
       value: `${bessUnitsRequired} un`,
+      highlight: true
+    },
+    {
+      label: "Potência Total",
+      value: `${actualPowerKw.toFixed(0)} kW`,
+      highlight: true
+    },
+    {
+      label: "Capacidade Total",
+      value: `${actualEnergyKwh.toFixed(0)} kWh`,
       highlight: true
     },
     {

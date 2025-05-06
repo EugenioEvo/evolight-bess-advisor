@@ -20,17 +20,18 @@ interface SummaryDashboardProps {
 }
 
 export function SummaryDashboard({ results, formValues }: SummaryDashboardProps) {
-  // Ajuste para garantir que os valores não ultrapassem as capacidades do módulo
-  const moduleMaxPower = 108; // kW
-  const moduleMaxEnergy = 215; // kWh
+  // BESS module specifications
+  const MODULE_POWER_KW = 108; // kW
+  const MODULE_ENERGY_KWH = 215; // kWh
   
-  // Limitar para os valores do módulo BESS
-  const adjustedPower = Math.min(results.calculatedPowerKw, moduleMaxPower);
-  const adjustedEnergy = Math.min(results.calculatedEnergyKwh, moduleMaxEnergy);
+  // Calculate required number of modules based on both power and energy
+  const modulesByPower = Math.ceil(results.calculatedPowerKw / MODULE_POWER_KW);
+  const modulesByEnergy = Math.ceil(results.calculatedEnergyKwh / MODULE_ENERGY_KWH);
+  const bessUnitsRequired = Math.max(modulesByPower, modulesByEnergy, 1); // At least 1 unit
   
-  // Cálculo de unidades BESS necessárias (sempre pelo menos 1 unidade, ou o valor inteiro imediatamente superior)
-  const rawUnitsRequired = Math.ceil(results.calculatedPowerKw / moduleMaxPower);
-  const bessUnitsRequired = Math.max(1, rawUnitsRequired);
+  // Calculate actual power and energy from the number of modules
+  const actualPowerKw = bessUnitsRequired * MODULE_POWER_KW;
+  const actualEnergyKwh = bessUnitsRequired * MODULE_ENERGY_KWH;
   
   // Cálculo do investimento total considerando unidades BESS indivisíveis
   let totalInvestment = 0;
@@ -42,8 +43,8 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
     // Se forneceu custo por unidade BESS, calcule baseado no número de unidades
     totalInvestment = bessUnitsRequired * formValues.bessUnitCost;
   } else {
-    // Caso contrário, use o custo por kWh
-    totalInvestment = adjustedEnergy * (formValues.bessInstallationCost || 1500);
+    // Caso contrário, use o custo por kWh com base na capacidade real
+    totalInvestment = actualEnergyKwh * (formValues.bessInstallationCost || 1500);
   }
   
   const estimatedAnnualSavings = results.annualSavings || 0;
@@ -61,8 +62,8 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* Dimensionamento KPIs */}
         <DimensioningCard 
-          powerKw={adjustedPower} 
-          energyKwh={adjustedEnergy}
+          powerKw={actualPowerKw} 
+          energyKwh={actualEnergyKwh}
           bessUnits={bessUnitsRequired}
         />
 
