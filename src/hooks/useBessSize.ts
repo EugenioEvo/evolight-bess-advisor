@@ -1,55 +1,24 @@
 
 import { useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { CalculateBessSizeParams, BessSizeResult } from '@/types/bessSizing'
 
-interface TariffStructure {
-  peak_start_hour: number
-  peak_end_hour: number
-  modality: "blue" | "green" | "conventional"
-}
-
-interface SizingParams {
-  backup_required: boolean
-  critical_load_kw?: number
-  backup_duration_h?: number
-  peak_shaving_required: boolean
-  peak_shaving_target_kw?: number
-  peak_reduction_kw?: number
-  peak_shaving_start_hour?: number
-  peak_shaving_end_hour?: number
-  peak_shaving_duration_hours?: number
-  arbitrage_required: boolean
-  pv_optim_required: boolean
-  grid_zero: boolean
-  sizing_buffer_factor?: number
-}
-
-interface BessTechnicalParams {
-  discharge_eff: number
-  charge_eff: number
-}
-
-interface SimulationParams {
-  interval_minutes: number
-}
-
-export interface CalculateBessSizeParams {
-  load_profile: number[]
-  pv_profile?: number[]
-  tariff_structure: TariffStructure
-  sizing_params: SizingParams
-  bess_technical_params: BessTechnicalParams
-  simulation_params: SimulationParams
-}
-
+/**
+ * Hook for battery energy storage system sizing functionality
+ */
 export const useBessSize = () => {
-  const calculateBessSize = useCallback(async (params: CalculateBessSizeParams) => {
+  /**
+   * Calculates the optimal BESS size based on provided parameters
+   * @param params The parameters needed for BESS sizing calculation
+   * @returns Promise resolving to the calculated power and energy specifications
+   */
+  const calculateBessSize = useCallback(async (params: CalculateBessSizeParams): Promise<BessSizeResult> => {
     const { data, error } = await supabase.functions.invoke('calculate-bess-size', {
       body: params,
     })
     
     if (error) throw error
-    return data as { calculated_power_kw: number; calculated_energy_kwh: number }
+    return data as BessSizeResult
   }, [])
 
   return {

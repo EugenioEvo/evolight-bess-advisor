@@ -17,11 +17,19 @@ export type SimulationResults = {
   isViable?: boolean;
 };
 
+/**
+ * Hook for managing battery simulation state and execution
+ */
 export function useSimulation() {
   const { calculateBessSize } = useBessSize();
   
   const [simulationResults, setSimulationResults] = useState<SimulationResults | null>(null);
 
+  /**
+   * Runs a full battery simulation including technical sizing and financial calculations
+   * @param values The form values from the simulator interface
+   * @returns Object containing success status and results or error
+   */
   const runSimulation = async (values: SimuladorFormValues) => {
     try {
       console.log("Submitting form values:", values);

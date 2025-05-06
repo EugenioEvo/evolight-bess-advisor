@@ -13,6 +13,14 @@ interface TechnicalSectionProps {
 }
 
 export function TechnicalSection({ results, formValues }: TechnicalSectionProps) {
+  // Calculate efficiency metrics
+  const roundTripEfficiency = formValues.bessEfficiency;
+  const epRatio = results.calculatedEnergyKwh / results.calculatedPowerKw;
+  const estimatedCyclesPerYear = formValues.usePeakShaving ? 
+    (formValues.useArbitrage ? 365 : 300) : 
+    (formValues.useArbitrage ? 180 : 130);
+  const estimatedDegradation = formValues.bessAnnualDegradation * formValues.bessLifetime;
+
   return (
     <AccordionItem value="technical">
       <AccordionTrigger className="font-medium">Detalhes Técnicos</AccordionTrigger>
@@ -37,11 +45,11 @@ export function TechnicalSection({ results, formValues }: TechnicalSectionProps)
               </TableRow>
               <TableRow>
                 <TableCell>Razão E/P</TableCell>
-                <TableCell>{(results.calculatedEnergyKwh / results.calculatedPowerKw).toFixed(2)}</TableCell>
+                <TableCell>{epRatio.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Eficiência Round-Trip</TableCell>
-                <TableCell>{formValues.bessEfficiency}%</TableCell>
+                <TableCell>{roundTripEfficiency}%</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Profundidade de Descarga Máxima</TableCell>
@@ -61,10 +69,10 @@ export function TechnicalSection({ results, formValues }: TechnicalSectionProps)
           {/* Ciclos de vida e detalhes de operação estimados */}
           <div className="mt-4">
             <h4 className="font-medium mb-2">Operação Estimada</h4>
-            <p>Ciclos diários: {formValues.usePeakShaving ? '1' : '0.5'}</p>
-            <p>Ciclos anuais: ~{formValues.usePeakShaving ? '365' : '180'}</p>
+            <p>Ciclos diários estimados: {formValues.usePeakShaving && formValues.useArbitrage ? '1-2' : formValues.usePeakShaving ? '1' : '0.5'}</p>
+            <p>Ciclos anuais estimados: ~{estimatedCyclesPerYear}</p>
             <p>Vida útil estimada: ~{formValues.bessLifetime} anos</p>
-            <p>Degradação ao final da vida útil: ~{(formValues.bessAnnualDegradation * formValues.bessLifetime).toFixed(1)}%</p>
+            <p>Degradação ao final da vida útil: ~{estimatedDegradation.toFixed(1)}%</p>
           </div>
         </div>
       </AccordionContent>
