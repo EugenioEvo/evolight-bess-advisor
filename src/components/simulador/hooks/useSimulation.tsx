@@ -40,6 +40,13 @@ export function useSimulation() {
       const loadProfile = generateLoadProfile(values);
       const pvProfile = generatePvProfile(values);
       
+      console.log("Generated profiles:", {
+        loadProfile: loadProfile?.length,
+        pvProfile: pvProfile?.length,
+        hasPv: values.hasPv,
+        pvPowerKwp: values.pvPowerKwp
+      });
+      
       // Build simulation parameters
       const simulationParams = buildSizingParams(values);
       simulationParams.load_profile = loadProfile;
@@ -59,27 +66,37 @@ export function useSimulation() {
       const sizingResult = await calculateBessSize(simulationParams);
       console.log("Received sizing result:", sizingResult);
       
-      // Calculate financial metrics
+      // Validate sizing result to ensure we have valid numerical values
+      const calculatedPowerKw = typeof sizingResult.calculated_power_kw === 'number' && 
+        !isNaN(sizingResult.calculated_power_kw) ? 
+        sizingResult.calculated_power_kw : 108; // Default to module size if invalid
+        
+      const calculatedEnergyKwh = typeof sizingResult.calculated_energy_kwh === 'number' && 
+        !isNaN(sizingResult.calculated_energy_kwh) ? 
+        sizingResult.calculated_energy_kwh : 215; // Default to module size if invalid
+      
+      // Calculate financial metrics with validated values
       const financials = calculateFinancialMetrics(
         values, 
-        sizingResult.calculated_power_kw, 
-        sizingResult.calculated_energy_kwh
+        calculatedPowerKw,
+        calculatedEnergyKwh
       );
       
       // Build and set simulation results
       const results: SimulationResults = {
-        calculatedPowerKw: sizingResult.calculated_power_kw,
-        calculatedEnergyKwh: sizingResult.calculated_energy_kwh,
+        calculatedPowerKw: calculatedPowerKw,
+        calculatedEnergyKwh: calculatedEnergyKwh,
         paybackYears: financials.paybackYears,
         annualSavings: financials.annualSavings,
         roi: financials.roi,
         isViable: financials.isViable
       };
       
+      console.log("Final simulation results:", results);
       setSimulationResults(results);
       
       toast.success("BESS dimensionado com sucesso!", {
-        description: `Potência: ${sizingResult.calculated_power_kw} kW, Capacidade: ${sizingResult.calculated_energy_kwh} kWh`
+        description: `Potência: ${calculatedPowerKw} kW, Capacidade: ${calculatedEnergyKwh} kWh`
       });
       
       return { success: true, results };

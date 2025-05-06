@@ -23,8 +23,25 @@ interface ResultsDisplayProps {
 }
 
 export function ResultsDisplay({ results, formValues }: ResultsDisplayProps) {
-  const hasValidResults = results && 
-    (results.calculatedPowerKw !== null || results.calculatedEnergyKwh !== null);
+  // Ensure we have valid numerical values for power and energy
+  const validPower = typeof results.calculatedPowerKw === 'number' && 
+    !isNaN(results.calculatedPowerKw) && results.calculatedPowerKw > 0;
+    
+  const validEnergy = typeof results.calculatedEnergyKwh === 'number' && 
+    !isNaN(results.calculatedEnergyKwh) && results.calculatedEnergyKwh > 0;
+    
+  const hasValidResults = results && (validPower || validEnergy);
+  
+  // Create a safer version of results with defaults for null/undefined values
+  const safeResults = {
+    calculatedPowerKw: validPower ? results.calculatedPowerKw : 0,
+    calculatedEnergyKwh: validEnergy ? results.calculatedEnergyKwh : 0,
+    paybackYears: typeof results.paybackYears === 'number' ? results.paybackYears : 0,
+    annualSavings: typeof results.annualSavings === 'number' ? results.annualSavings : 0,
+    roi: typeof results.roi === 'number' ? results.roi : 0,
+    npv: typeof results.npv === 'number' ? results.npv : 0,
+    isViable: typeof results.isViable === 'boolean' ? results.isViable : false,
+  };
   
   if (!hasValidResults) {
     return (
@@ -39,7 +56,7 @@ export function ResultsDisplay({ results, formValues }: ResultsDisplayProps) {
 
   return (
     <div className="space-y-6">
-      <SummaryDashboard results={results} formValues={formValues} />
+      <SummaryDashboard results={safeResults} formValues={formValues} />
       
       <Tabs defaultValue="charts" className="mt-8">
         <TabsList className="grid grid-cols-3 mb-4">
@@ -49,20 +66,20 @@ export function ResultsDisplay({ results, formValues }: ResultsDisplayProps) {
         </TabsList>
         
         <TabsContent value="charts" className="space-y-6">
-          <InteractiveCharts results={results} formValues={formValues} />
+          <InteractiveCharts results={safeResults} formValues={formValues} />
         </TabsContent>
         
         <TabsContent value="report" className="space-y-6">
-          <DetailedReport results={results} formValues={formValues} />
+          <DetailedReport results={safeResults} formValues={formValues} />
           
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Exportação</h3>
-            <ExportButtons results={results} formValues={formValues} />
+            <ExportButtons results={safeResults} formValues={formValues} />
           </div>
         </TabsContent>
         
         <TabsContent value="sensitivity" className="space-y-6">
-          <SensitivityAnalysis results={results} formValues={formValues} />
+          <SensitivityAnalysis results={safeResults} formValues={formValues} />
         </TabsContent>
       </Tabs>
       

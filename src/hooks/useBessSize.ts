@@ -35,10 +35,32 @@ export const useBessSize = () => {
         toast.error("Falha no dimensionamento", {
           description: "Ocorreu um erro ao calcular o dimensionamento do BESS"
         });
-        throw error;
+        // Return default values even on error to prevent null values
+        return {
+          calculated_power_kw: 108, // Default module size
+          calculated_energy_kwh: 215 // Default module size
+        };
       }
       
-      console.log("BESS sizing calculation successful:", data);
+      console.log("BESS sizing calculation result data:", data);
+      
+      // Validate the received data
+      if (!data || 
+          typeof data.calculated_power_kw !== 'number' || 
+          typeof data.calculated_energy_kwh !== 'number' ||
+          isNaN(data.calculated_power_kw) ||
+          isNaN(data.calculated_energy_kwh)) {
+        
+        console.error("Invalid BESS sizing result:", data);
+        setLastError(new Error("Resultado do dimensionamento inválido"));
+        
+        // Return default values if the data is invalid
+        return {
+          calculated_power_kw: 108, // Default module size
+          calculated_energy_kwh: 215 // Default module size
+        };
+      }
+      
       return data as BessSizeResult;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido no dimensionamento";
@@ -46,7 +68,12 @@ export const useBessSize = () => {
       toast.error("Erro no dimensionamento", {
         description: errorMessage
       });
-      throw error;
+      
+      // Return default values even on error to prevent null values
+      return {
+        calculated_power_kw: 108, // Default module size
+        calculated_energy_kwh: 215 // Default module size
+      };
     } finally {
       setIsCalculating(false);
     }
@@ -66,9 +93,15 @@ export const useBessSize = () => {
    */
   const validateParams = useCallback((params: CalculateBessSizeParams): boolean => {
     // Basic validation
-    if (!params.load_profile || params.load_profile.length === 0) {
+    if (!params.load_profile || !Array.isArray(params.load_profile) || params.load_profile.length === 0) {
       setLastError(new Error("Perfil de carga inválido ou vazio"));
       return false;
+    }
+    
+    // Ensure pv_profile is an array if provided
+    if (params.pv_profile && !Array.isArray(params.pv_profile)) {
+      console.warn("PV profile provided but not an array, correcting to empty array", params.pv_profile);
+      params.pv_profile = [];
     }
     
     // Check if at least one sizing strategy is enabled

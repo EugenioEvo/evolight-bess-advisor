@@ -38,11 +38,13 @@ export function generateLoadProfile(values: SimuladorFormValues): number[] {
 /**
  * Generate a synthetic PV profile based on form values
  */
-export function generatePvProfile(values: SimuladorFormValues): number[] | undefined {
+export function generatePvProfile(values: SimuladorFormValues): number[] {
+  // Return empty array instead of undefined when PV is not used
   if (!values.hasPv || values.pvPowerKwp <= 0) {
-    return undefined;
+    return [];
   }
   
+  // Generate a synthetic profile based on typical solar production curve
   return [0, 0, 0, 0, 0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0, 0.9, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0, 0, 0, 0]
     .map(v => v * values.pvPowerKwp);
 }
