@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 interface TariffStructure {
   peak_start_hour: number
   peak_end_hour: number
+  modality: "blue" | "green" | "conventional"
 }
 
 interface SizingParams {

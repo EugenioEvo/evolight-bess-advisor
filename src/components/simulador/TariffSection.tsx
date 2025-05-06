@@ -13,6 +13,8 @@ interface TariffSectionProps {
 
 export function TariffSection({ form }: TariffSectionProps) {
   const tarifaryGroup = form.watch("tarifaryGroup");
+  const modalityA = form.watch("modalityA");
+  const isBlueModality = modalityA === "blue";
 
   return (
     <div>
@@ -249,19 +251,21 @@ export function TariffSection({ form }: TariffSectionProps) {
       <div className="mb-6">
         <h4 className="text-md font-medium mb-2">Dados de Demanda Contratada</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="contractedPeakDemandKw"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Demanda Contratada Ponta (kW)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {isBlueModality && (
+            <FormField
+              control={form.control}
+              name="contractedPeakDemandKw"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Demanda Contratada Ponta (kW)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           
           <FormField
             control={form.control}
@@ -368,19 +372,21 @@ export function TariffSection({ form }: TariffSectionProps) {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="tusdPeakKw"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>TUSD Demanda Ponta (R$/kW)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {isBlueModality && (
+                <FormField
+                  control={form.control}
+                  name="tusdPeakKw"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>TUSD Demanda Ponta (R$/kW)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               
               <FormField
                 control={form.control}

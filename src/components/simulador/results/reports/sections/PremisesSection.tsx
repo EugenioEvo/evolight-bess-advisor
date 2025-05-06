@@ -57,7 +57,11 @@ export function PremisesSection({ formValues }: PremisesSectionProps) {
               </TableRow>
               <TableRow>
                 <TableCell>Grupo Tarifário</TableCell>
-                <TableCell>{formValues.tarifaryGroup === 'groupA' ? 'Grupo A' : 'Grupo B'}</TableCell>
+                <TableCell>
+                  {formValues.tarifaryGroup === 'groupA' ? 
+                    `Grupo A (${formValues.modalityA === 'blue' ? 'Azul' : 'Verde'})` : 
+                    'Grupo B'}
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Horizonte de Análise (anos)</TableCell>
