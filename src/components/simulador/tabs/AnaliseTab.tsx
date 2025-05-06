@@ -15,14 +15,21 @@ interface AnaliseTabProps {
   } | null;
   formValues: SimuladorFormValues;
   onChangeTab: (tab: string) => void;
+  isSimulating?: boolean;
 }
 
-export function AnaliseTab({ simulationResults, formValues, onChangeTab }: AnaliseTabProps) {
+export function AnaliseTab({ 
+  simulationResults, 
+  formValues, 
+  onChangeTab,
+  isSimulating = false
+}: AnaliseTabProps) {
   return (
     <AnalysisSection 
       simulationResults={simulationResults} 
       formValues={formValues}
       onChangeTab={onChangeTab}
+      isSimulating={isSimulating}
     />
   );
 }

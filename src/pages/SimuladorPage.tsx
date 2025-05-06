@@ -11,7 +11,7 @@ import { useState } from 'react';
 
 const SimuladorPage = () => {
   const [activeTab, setActiveTab] = useState("dados");
-  const { simulationResults, runSimulation } = useSimulation();
+  const { simulationResults, runSimulation, isSimulating } = useSimulation();
   
   // Criar um array com valores padrão para demanda horária
   const defaultHourlyDemand = Array(24).fill(0).map((_, i) => {
@@ -143,6 +143,7 @@ const SimuladorPage = () => {
           form={form}
           onSubmit={onSubmit}
           simulationResults={simulationResults}
+          isSimulating={isSimulating}
         />
       </main>
       

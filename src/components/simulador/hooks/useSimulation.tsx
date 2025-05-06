@@ -21,9 +21,10 @@ export type SimulationResults = {
  * Hook for managing battery simulation state and execution
  */
 export function useSimulation() {
-  const { calculateBessSize } = useBessSize();
+  const { calculateBessSize, isCalculating, validateParams } = useBessSize();
   
   const [simulationResults, setSimulationResults] = useState<SimulationResults | null>(null);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
   /**
    * Runs a full battery simulation including technical sizing and financial calculations
@@ -32,6 +33,7 @@ export function useSimulation() {
    */
   const runSimulation = async (values: SimuladorFormValues) => {
     try {
+      setIsSimulating(true);
       console.log("Submitting form values:", values);
       
       // Generate load and PV profiles
@@ -44,6 +46,14 @@ export function useSimulation() {
       simulationParams.pv_profile = pvProfile;
       
       console.log("Sending to Edge Function:", simulationParams);
+      
+      // Validate parameters before sending to edge function
+      if (!validateParams(simulationParams)) {
+        toast.error("Parâmetros inválidos", {
+          description: "Verifique os dados de entrada e tente novamente"
+        });
+        return { success: false, error: new Error("Parâmetros inválidos") };
+      }
 
       // Call the sizing calculation endpoint
       const sizingResult = await calculateBessSize(simulationParams);
@@ -79,12 +89,15 @@ export function useSimulation() {
         description: "Tente novamente ou ajuste os parâmetros"
       });
       return { success: false, error };
+    } finally {
+      setIsSimulating(false);
     }
   };
 
   return {
     simulationResults,
     setSimulationResults,
-    runSimulation
+    runSimulation,
+    isSimulating
   };
 }

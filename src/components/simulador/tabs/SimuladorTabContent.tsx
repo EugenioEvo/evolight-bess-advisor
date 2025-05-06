@@ -20,6 +20,7 @@ interface SimuladorTabContentProps {
     npv?: number;
     isViable?: boolean;
   } | null;
+  isSimulating?: boolean;
 }
 
 export function SimuladorTabContent({
@@ -27,7 +28,8 @@ export function SimuladorTabContent({
   setActiveTab,
   form,
   onSubmit,
-  simulationResults
+  simulationResults,
+  isSimulating = false
 }: SimuladorTabContentProps) {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -46,6 +48,7 @@ export function SimuladorTabContent({
           simulationResults={simulationResults} 
           formValues={form.getValues()}
           onChangeTab={setActiveTab}
+          isSimulating={isSimulating}
         />
       </TabsContent>
       
@@ -54,6 +57,7 @@ export function SimuladorTabContent({
           simulationResults={simulationResults} 
           formValues={form.getValues()} 
           onChangeTab={setActiveTab}
+          isSimulating={isSimulating}
         />
       </TabsContent>
     </Tabs>
