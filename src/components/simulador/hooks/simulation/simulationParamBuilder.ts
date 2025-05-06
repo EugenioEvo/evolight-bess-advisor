@@ -28,8 +28,8 @@ export function buildSizingParams(values: SimuladorFormValues) {
   }
 
   // Determine the tariff modality based on form values
-  const modality = values.tarifaryGroup === "groupA" 
-    ? values.modalityA 
+  const modality: "blue" | "green" | "conventional" = values.tarifaryGroup === "groupA" 
+    ? (values.modalityA as "blue" | "green")
     : "conventional";
   
   // Build and return the full parameter object

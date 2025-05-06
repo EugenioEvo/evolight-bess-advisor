@@ -24,7 +24,7 @@ export function DadosTab({ form, onSubmit }: DadosTabProps) {
         </CardDescription>
         
         {tarifaryGroup === "groupA" && (
-          <Alert className="mt-2 bg-blue-50">
+          <Alert className="mt-2 bg-blue-50" variant="default">
             <Info className="h-4 w-4 text-blue-500" />
             <AlertDescription className="text-sm">
               {modalityA === "blue" 
