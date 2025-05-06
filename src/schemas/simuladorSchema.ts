@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const simuladorFormSchema = z.object({
@@ -7,7 +6,7 @@ export const simuladorFormSchema = z.object({
   location: z.string().optional(),
   
   // Perfil de Consumo
-  loadEntryMethod: z.enum(["average", "upload"]).default("average"),
+  loadEntryMethod: z.enum(["average", "hourly", "upload"]).default("average"),
   // Demanda
   avgPeakDemandKw: z.coerce.number()
     .min(0, { message: "Demanda média na ponta deve ser maior ou igual a 0" })
@@ -34,6 +33,9 @@ export const simuladorFormSchema = z.object({
   avgMonthlyOffpeakConsumptionKwh: z.coerce.number()
     .min(0, { message: "Consumo mensal fora de ponta deve ser maior ou igual a 0" })
     .default(0),
+  
+  // Novo esquema de valores horários (24 horas)
+  hourlyDemandKw: z.array(z.coerce.number().min(0).default(0)).length(24).default(() => Array(24).fill(0)),
   
   // Parâmetros BESS
   bessCapacityKwh: z.coerce.number().min(1, { message: "Capacidade deve ser maior que 0" }),

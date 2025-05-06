@@ -13,6 +13,13 @@ const SimuladorPage = () => {
   const [activeTab, setActiveTab] = useState("dados");
   const { simulationResults, runSimulation } = useSimulation();
   
+  // Criar um array com valores padrão para demanda horária
+  const defaultHourlyDemand = Array(24).fill(0).map((_, i) => {
+    if (i >= 18 && i <= 21) return 100; // Horário de ponta (18h-21h)
+    if (i >= 8 && i <= 17) return 80;  // Horário comercial (8h-17h)
+    return 40; // Demais horários
+  });
+  
   const form = useForm<SimuladorFormValues>({
     resolver: zodResolver(simuladorFormSchema),
     defaultValues: {
@@ -31,6 +38,7 @@ const SimuladorPage = () => {
       avgDailyOffpeakConsumptionKwh: 1600,
       avgMonthlyPeakConsumptionKwh: 12000,
       avgMonthlyOffpeakConsumptionKwh: 48000,
+      hourlyDemandKw: defaultHourlyDemand,
       
       // Parâmetros BESS
       bessCapacityKwh: 215,
@@ -106,9 +114,9 @@ const SimuladorPage = () => {
       peakShavingMethod: "percentage",
       peakShavingTarget: 0,
       peakShavingPercentage: 30,
-      peakShavingStartHour: 18,  // Valor padrão igual ao peakStartHour
-      peakShavingEndHour: 21,    // Valor padrão igual ao peakEndHour
-      peakShavingDurationHours: 3, // Duração padrão = 3 horas
+      peakShavingStartHour: 18,
+      peakShavingEndHour: 21,
+      peakShavingDurationHours: 3,
       criticalLoadKw: 0,
       backupDurationHours: 2,
     },

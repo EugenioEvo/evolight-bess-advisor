@@ -33,7 +33,7 @@ interface SimulationParams {
   interval_minutes: number
 }
 
-interface CalculateBessSizeParams {
+export interface CalculateBessSizeParams {
   load_profile: number[]
   pv_profile?: number[]
   tariff_structure: TariffStructure

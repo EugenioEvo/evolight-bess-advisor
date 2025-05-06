@@ -5,6 +5,12 @@ import { SimuladorFormValues } from "@/schemas/simuladorSchema";
  * Generate a synthetic load profile based on form values
  */
 export function generateLoadProfile(values: SimuladorFormValues): number[] {
+  // Se o método de entrada for horário, use esses dados diretamente
+  if (values.loadEntryMethod === "hourly" && values.hourlyDemandKw.some(v => v > 0)) {
+    return values.hourlyDemandKw;
+  }
+
+  // Caso contrário, gere um perfil sintético baseado nos valores médios
   const profile = [];
   const peakLoad = values.avgPeakDemandKw > 0 ? values.avgPeakDemandKw : 50;
   const offpeakLoad = values.avgOffpeakDemandKw > 0 ? values.avgOffpeakDemandKw : 40;

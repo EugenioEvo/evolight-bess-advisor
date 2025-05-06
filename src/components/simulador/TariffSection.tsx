@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
+import { HourlyDemandInput } from './HourlyDemandInput';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TariffSectionProps {
   form: UseFormReturn<SimuladorFormValues>;
@@ -15,6 +16,7 @@ export function TariffSection({ form }: TariffSectionProps) {
   const tarifaryGroup = form.watch("tarifaryGroup");
   const modalityA = form.watch("modalityA");
   const isBlueModality = modalityA === "blue";
+  const loadEntryMethod = form.watch("loadEntryMethod");
 
   return (
     <div>
@@ -40,6 +42,10 @@ export function TariffSection({ form }: TariffSectionProps) {
                       <FormLabel htmlFor="average" className="font-normal">Dados Médios</FormLabel>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="hourly" id="hourly" />
+                      <FormLabel htmlFor="hourly" className="font-normal">Valores Horários</FormLabel>
+                    </div>
+                    <div className="flex items-center space-x-2">
                       <RadioGroupItem value="upload" id="upload" />
                       <FormLabel htmlFor="upload" className="font-normal">Upload Arquivo</FormLabel>
                     </div>
@@ -50,7 +56,7 @@ export function TariffSection({ form }: TariffSectionProps) {
             )}
           />
           
-          {form.watch("loadEntryMethod") === "average" && (
+          {loadEntryMethod === "average" && (
             <>
               <div className="col-span-2">
                 <h5 className="text-sm font-medium mb-2 text-gray-700">Demanda (kW)</h5>
@@ -176,14 +182,24 @@ export function TariffSection({ form }: TariffSectionProps) {
             </>
           )}
           
-          {form.watch("loadEntryMethod") === "upload" && (
+          {loadEntryMethod === "hourly" && (
+            <div className="col-span-2">
+              <h5 className="text-sm font-medium mb-2 text-gray-700">Demanda Horária (kW)</h5>
+              <p className="text-sm text-gray-500 mb-2">
+                Informe a potência média para cada hora do dia:
+              </p>
+              <HourlyDemandInput form={form} />
+            </div>
+          )}
+          
+          {loadEntryMethod === "upload" && (
             <FormItem>
               <FormLabel>Arquivo de Consumo (.csv, .xlsx)</FormLabel>
               <FormControl>
                 <Input type="file" accept=".csv,.xlsx" disabled />
               </FormControl>
               <FormDescription>
-                Funcionalidade em desenvolvimento. Por favor, use a entrada por dados médios.
+                Funcionalidade em desenvolvimento. Por favor, use a entrada por dados médios ou valores horários.
               </FormDescription>
               <FormMessage />
             </FormItem>
