@@ -10,9 +10,13 @@ function buildTariffStructureParams(values: SimuladorFormValues) {
     ? (values.modalityA as "blue" | "green")
     : "conventional";
     
+  // Garanta valores padrão para as horas de pico
+  const peakStartHour = typeof values.peakStartHour === 'number' ? values.peakStartHour : 18;
+  const peakEndHour = typeof values.peakEndHour === 'number' ? values.peakEndHour : 21;
+    
   return {
-    peak_start_hour: values.peakStartHour,
-    peak_end_hour: values.peakEndHour,
+    peak_start_hour: peakStartHour,
+    peak_end_hour: peakEndHour,
     modality: modality
   };
 }
@@ -24,13 +28,26 @@ function buildPeakShavingParams(values: SimuladorFormValues) {
   let peakShavingTarget = 0;
   let peakReductionKw = 0;
   
+  // Garanta valores padrão para as horas de peak shaving
+  const peakShavingStartHour = typeof values.peakShavingStartHour === 'number' ? values.peakShavingStartHour : 18;
+  const peakShavingEndHour = typeof values.peakShavingEndHour === 'number' ? values.peakShavingEndHour : 21;
+  const peakShavingDurationHours = typeof values.peakShavingDurationHours === 'number' ? values.peakShavingDurationHours : 3;
+  
   if (values.usePeakShaving) {
-    if (values.peakShavingMethod === 'percentage') {
-      peakReductionKw = values.maxPeakDemandKw * (values.peakShavingPercentage / 100);
-    } else if (values.peakShavingMethod === 'reduction') {
+    // Para garantir que temos um valor válido para maxPeakDemandKw
+    const maxPeakDemand = typeof values.maxPeakDemandKw === 'number' && values.maxPeakDemandKw > 0 
+      ? values.maxPeakDemandKw 
+      : (typeof values.avgPeakDemandKw === 'number' ? values.avgPeakDemandKw * 1.5 : 100);
+      
+    if (values.peakShavingMethod === 'percentage' && typeof values.peakShavingPercentage === 'number') {
+      peakReductionKw = maxPeakDemand * (values.peakShavingPercentage / 100);
+    } else if (values.peakShavingMethod === 'reduction' && typeof values.peakShavingTarget === 'number') {
       peakReductionKw = values.peakShavingTarget;
-    } else if (values.peakShavingMethod === 'target') {
+    } else if (values.peakShavingMethod === 'target' && typeof values.peakShavingTarget === 'number') {
       peakShavingTarget = values.peakShavingTarget;
+    } else {
+      // Valor padrão se nenhum método for especificado
+      peakReductionKw = maxPeakDemand * 0.3; // 30% de redução por padrão
     }
   }
 
@@ -38,9 +55,9 @@ function buildPeakShavingParams(values: SimuladorFormValues) {
     peak_shaving_required: values.usePeakShaving,
     peak_shaving_target_kw: peakShavingTarget > 0 ? peakShavingTarget : undefined,
     peak_reduction_kw: peakReductionKw > 0 ? peakReductionKw : undefined,
-    peak_shaving_start_hour: values.peakShavingStartHour,
-    peak_shaving_end_hour: values.peakShavingEndHour,
-    peak_shaving_duration_hours: values.peakShavingDurationHours,
+    peak_shaving_start_hour: peakShavingStartHour,
+    peak_shaving_end_hour: peakShavingEndHour,
+    peak_shaving_duration_hours: peakShavingDurationHours,
   };
 }
 
@@ -52,8 +69,15 @@ function buildBackupParams(values: SimuladorFormValues) {
   let backupDurationH = undefined;
   
   if (values.useBackup) {
-    criticalLoadKw = values.criticalLoadKw > 0 ? values.criticalLoadKw : values.avgPeakDemandKw * 0.5;
-    backupDurationH = values.backupDurationHours > 0 ? values.backupDurationHours : 2;
+    // Garanta valores padrão para carga crítica
+    criticalLoadKw = typeof values.criticalLoadKw === 'number' && values.criticalLoadKw > 0 
+      ? values.criticalLoadKw 
+      : (typeof values.avgPeakDemandKw === 'number' ? values.avgPeakDemandKw * 0.5 : 50);
+      
+    // Garanta valores padrão para duração de backup
+    backupDurationH = typeof values.backupDurationHours === 'number' && values.backupDurationHours > 0 
+      ? values.backupDurationHours 
+      : 2;
   }
 
   return {
@@ -67,9 +91,14 @@ function buildBackupParams(values: SimuladorFormValues) {
  * Build BESS technical parameters
  */
 function buildBessTechnicalParams(values: SimuladorFormValues) {
+  // Garanta um valor padrão para a eficiência da bateria
+  const efficiency = typeof values.bessEfficiency === 'number' && values.bessEfficiency > 0 
+    ? values.bessEfficiency / 100 
+    : 0.9;
+    
   return {
-    discharge_eff: Math.sqrt(values.bessEfficiency / 100),
-    charge_eff: Math.sqrt(values.bessEfficiency / 100)
+    discharge_eff: Math.sqrt(efficiency),
+    charge_eff: Math.sqrt(efficiency)
   };
 }
 
@@ -94,6 +123,20 @@ export function buildSizingParams(values: SimuladorFormValues) {
   const backupParams = buildBackupParams(values);
   const bessTechnicalParams = buildBessTechnicalParams(values);
   const optimizationParams = buildOptimizationParams(values);
+  
+  // Certifique-se de que pelo menos uma estratégia está habilitada
+  if (!values.usePeakShaving && !values.useArbitrage && !values.useBackup && !values.usePvOptim) {
+    console.warn("Nenhuma estratégia de controle habilitada. Habilitando peak shaving por padrão.");
+    peakShavingParams.peak_shaving_required = true;
+    
+    // Configurar valores padrão para peak shaving
+    if (!peakShavingParams.peak_reduction_kw) {
+      const defaultPeakDemand = typeof values.maxPeakDemandKw === 'number' && values.maxPeakDemandKw > 0 
+        ? values.maxPeakDemandKw 
+        : 100;
+      peakShavingParams.peak_reduction_kw = defaultPeakDemand * 0.3; // 30% de redução
+    }
+  }
   
   // Build and return the full parameter object
   return {

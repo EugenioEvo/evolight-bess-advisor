@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -7,11 +8,12 @@ import { HeaderSection } from '@/components/simulador/HeaderSection';
 import { FooterSection } from '@/components/simulador/FooterSection';
 import { SimuladorTabContent } from '@/components/simulador/tabs/SimuladorTabContent';
 import { useSimulation } from '@/components/simulador/hooks/useSimulation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 const SimuladorPage = () => {
   const [activeTab, setActiveTab] = useState("dados");
-  const { simulationResults, runSimulation, isSimulating } = useSimulation();
+  const { simulationResults, runSimulation, isSimulating, simulationError } = useSimulation();
   
   // Criar um array com valores padrão para demanda horária
   const defaultHourlyDemand = Array(24).fill(0).map((_, i) => {
@@ -24,7 +26,7 @@ const SimuladorPage = () => {
     resolver: zodResolver(simuladorFormSchema),
     defaultValues: {
       // Informações do Projeto
-      projectName: "",
+      projectName: "Novo Projeto",
       installationType: "industrial",
       location: "",
       
@@ -122,12 +124,71 @@ const SimuladorPage = () => {
     },
   });
   
+  // Efeito para mostrar erro de simulação se existir
+  useEffect(() => {
+    if (simulationError) {
+      toast.error("Erro na simulação", {
+        description: simulationError
+      });
+    }
+  }, [simulationError]);
+
+  // Função auxiliar para verificar se os dados necessários estão preenchidos
+  const validateRequiredFields = (values: SimuladorFormValues): boolean => {
+    // Verificações mínimas para garantir uma simulação válida
+    if (values.loadEntryMethod === "average") {
+      if (!values.avgPeakDemandKw || !values.avgOffpeakDemandKw) {
+        toast.error("Dados incompletos", {
+          description: "Preencha os valores de demanda média na ponta e fora de ponta"
+        });
+        return false;
+      }
+    } else if (values.loadEntryMethod === "hourly") {
+      if (!values.hourlyDemandKw || !values.hourlyDemandKw.some(v => v > 0)) {
+        toast.error("Dados incompletos", {
+          description: "Preencha os valores de demanda horária"
+        });
+        return false;
+      }
+    }
+
+    // Verificar se pelo menos uma estratégia de controle está habilitada
+    if (!values.usePeakShaving && !values.useArbitrage && !values.useBackup && !values.usePvOptim) {
+      toast.warning("Nenhuma estratégia de controle selecionada", {
+        description: "Habilitando Peak Shaving como padrão"
+      });
+      
+      // Habilitar peak shaving como estratégia padrão
+      form.setValue("usePeakShaving", true);
+    }
+
+    return true;
+  };
+  
   const onSubmit = async (values: SimuladorFormValues) => {
-    const result = await runSimulation(values);
-    if (result.success) {
-      form.setValue('bessPowerKw', result.results.calculatedPowerKw);
-      form.setValue('bessCapacityKwh', result.results.calculatedEnergyKwh);
-      setActiveTab("analise");
+    console.log("Form submitted with values:", values);
+    
+    // Verificar se os campos necessários estão preenchidos
+    if (!validateRequiredFields(values)) {
+      return;
+    }
+    
+    try {
+      const result = await runSimulation(values);
+      if (result.success) {
+        form.setValue('bessPowerKw', result.results.calculatedPowerKw);
+        form.setValue('bessCapacityKwh', result.results.calculatedEnergyKwh);
+        setActiveTab("analise");
+      } else {
+        toast.error("Erro na simulação", {
+          description: "Verifique os dados de entrada e tente novamente"
+        });
+      }
+    } catch (error) {
+      console.error("Error during simulation submission:", error);
+      toast.error("Erro ao processar simulação", {
+        description: error instanceof Error ? error.message : "Erro desconhecido"
+      });
     }
   };
 

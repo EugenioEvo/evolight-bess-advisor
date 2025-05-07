@@ -25,6 +25,7 @@ export function useSimulation() {
   
   const [simulationResults, setSimulationResults] = useState<SimulationResults | null>(null);
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [simulationError, setSimulationError] = useState<string | null>(null);
 
   /**
    * Runs a full battery simulation including technical sizing and financial calculations
@@ -34,6 +35,7 @@ export function useSimulation() {
   const runSimulation = async (values: SimuladorFormValues) => {
     try {
       setIsSimulating(true);
+      setSimulationError(null);
       console.log("Submitting form values:", values);
       
       // Generate load and PV profiles
@@ -47,33 +49,56 @@ export function useSimulation() {
         pvPowerKwp: values.pvPowerKwp
       });
       
+      if (!loadProfile || loadProfile.length === 0) {
+        toast.error("Perfil de carga inválido", {
+          description: "Não foi possível gerar o perfil de carga. Verifique os dados de entrada."
+        });
+        setSimulationError("Perfil de carga inválido");
+        return { success: false, error: new Error("Perfil de carga inválido") };
+      }
+      
       // Build simulation parameters
       const simulationParams = buildSizingParams(values);
       simulationParams.load_profile = loadProfile;
-      simulationParams.pv_profile = pvProfile;
+      simulationParams.pv_profile = pvProfile || [];
       
       console.log("Sending to Edge Function:", simulationParams);
       
       // Validate parameters before sending to edge function
       if (!validateParams(simulationParams)) {
+        const errorMessage = "Parâmetros inválidos. Verifique se pelo menos uma estratégia de dimensionamento está habilitada.";
         toast.error("Parâmetros inválidos", {
           description: "Verifique os dados de entrada e tente novamente"
         });
-        return { success: false, error: new Error("Parâmetros inválidos") };
+        setSimulationError(errorMessage);
+        return { success: false, error: new Error(errorMessage) };
       }
 
       // Call the sizing calculation endpoint
-      const sizingResult = await calculateBessSize(simulationParams);
-      console.log("Received sizing result:", sizingResult);
+      let sizingResult;
+      try {
+        sizingResult = await calculateBessSize(simulationParams);
+        console.log("Received sizing result:", sizingResult);
+      } catch (callError) {
+        console.error('Error calling BESS size calculation function:', callError);
+        // Se falhar, use valores padrão mas informe ao usuário
+        toast.warning("Usando dimensionamento padrão", {
+          description: "Não foi possível calcular o dimensionamento. Usando valores padrão."
+        });
+        sizingResult = {
+          calculated_power_kw: values.bessPowerKw || 108,
+          calculated_energy_kwh: values.bessCapacityKwh || 215
+        };
+      }
       
       // Validate sizing result to ensure we have valid numerical values
       const calculatedPowerKw = typeof sizingResult.calculated_power_kw === 'number' && 
         !isNaN(sizingResult.calculated_power_kw) ? 
-        sizingResult.calculated_power_kw : 108; // Default to module size if invalid
+        sizingResult.calculated_power_kw : (values.bessPowerKw || 108); // Use input value as fallback
         
       const calculatedEnergyKwh = typeof sizingResult.calculated_energy_kwh === 'number' && 
         !isNaN(sizingResult.calculated_energy_kwh) ? 
-        sizingResult.calculated_energy_kwh : 215; // Default to module size if invalid
+        sizingResult.calculated_energy_kwh : (values.bessCapacityKwh || 215); // Use input value as fallback
       
       // Calculate financial metrics with validated values
       const financials = calculateFinancialMetrics(
@@ -96,15 +121,17 @@ export function useSimulation() {
       setSimulationResults(results);
       
       toast.success("BESS dimensionado com sucesso!", {
-        description: `Potência: ${calculatedPowerKw} kW, Capacidade: ${calculatedEnergyKwh} kWh`
+        description: `Potência: ${calculatedPowerKw.toFixed(2)} kW, Capacidade: ${calculatedEnergyKwh.toFixed(2)} kWh`
       });
       
       return { success: true, results };
     } catch (error) {
       console.error('Error calculating BESS size:', error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast.error("Erro ao dimensionar BESS", {
         description: "Tente novamente ou ajuste os parâmetros"
       });
+      setSimulationError(errorMessage);
       return { success: false, error };
     } finally {
       setIsSimulating(false);
@@ -113,6 +140,7 @@ export function useSimulation() {
 
   return {
     simulationResults,
+    simulationError,
     setSimulationResults,
     runSimulation,
     isSimulating
