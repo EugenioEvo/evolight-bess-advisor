@@ -13,7 +13,7 @@ export interface BessDispatchPoint {
   discharge: number;
   grid: number;
   soc: number;
-  dieselRef?: number;
+  dieselRef: number; // Changed from optional to required
 }
 
 export interface BessSimulationResult {

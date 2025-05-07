@@ -13,6 +13,7 @@ interface DieselBessChartProps {
     discharge: number;
     soc: number;
     dieselRef: number;
+    pv?: number;
   }>;
 }
 
