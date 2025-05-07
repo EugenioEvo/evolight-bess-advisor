@@ -149,8 +149,11 @@ export function processSimulationResults(simulationResult: {
     };
   }
   
-  // Extract data from simulation result
-  const dispatch = simulationResult.dispatch24h;
+  // Extract data from simulation result and ensure dieselRef is always defined
+  const dispatch = simulationResult.dispatch24h.map(point => ({
+    ...point,
+    dieselRef: point.dieselRef ?? 0 // Ensure dieselRef is always defined
+  }));
   
   // Calculate KPIs
   const dieselBaselineKWh = dispatch.reduce((sum, point) => sum + (point.dieselRef || 0), 0);

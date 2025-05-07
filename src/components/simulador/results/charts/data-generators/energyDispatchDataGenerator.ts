@@ -51,7 +51,8 @@ export function generateEnergyDispatchData(
       charge,
       discharge,
       grid: gridValue,
-      soc: socValue
+      soc: socValue,
+      dieselRef: 0 // Default value for dieselRef (required field)
     };
   });
 }

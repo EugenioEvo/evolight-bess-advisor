@@ -1,4 +1,3 @@
-
 // Helper functions
 const sum = (arr: number[]): number => arr.reduce((a, b) => a + b, 0);
 const range = (start: number, end: number): number[] => {
@@ -53,7 +52,7 @@ interface DispatchPoint {
   discharge: number;
   grid: number;
   soc: number;
-  dieselRef?: number;
+  dieselRef: number; // Changed from optional to required
 }
 
 // Final output interface
