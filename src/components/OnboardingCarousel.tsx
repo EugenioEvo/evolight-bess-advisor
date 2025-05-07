@@ -49,7 +49,7 @@ const OnboardingCarousel: React.FC = () => {
   };
 
   const completeOnboarding = () => {
-    navigate('/home');
+    navigate('/login');
   };
 
   return (
@@ -67,17 +67,20 @@ const OnboardingCarousel: React.FC = () => {
           {slides[currentSlide].description}
         </p>
         
-        <div className="carousel-dots">
+        <div className="flex justify-center gap-2 mb-12">
           {slides.map((_, index) => (
             <div 
               key={index} 
-              className={`carousel-dot ${currentSlide === index ? 'active' : ''}`}
+              className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${currentSlide === index ? 'bg-evolight-navy' : 'bg-gray-300'}`}
               onClick={() => setCurrentSlide(index)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Slide ${index + 1}`}
             />
           ))}
         </div>
         
-        <div className="flex justify-between mt-12">
+        <div className="flex justify-between">
           <div className="flex gap-4">
             {currentSlide > 0 && (
               <Button variant="outline" onClick={prevSlide}>
