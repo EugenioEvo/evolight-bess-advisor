@@ -124,7 +124,7 @@ export const useBessSize = () => {
         // Set default peak reduction if not set
         if (!params.sizing_params.peak_reduction_kw) {
           const maxLoad = Math.max(...params.load_profile);
-          params.sizing_params.peak_reduction_kw = maxLoad * 0.3; // 30% reduction
+          params.sizing_params.peak_reduction_kw = maxLoad * 1; // 100% reduction
         }
       }
       
