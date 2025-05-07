@@ -1,4 +1,3 @@
-
 /*
   inData = { profile:[kW…24], params:{ ... } }
   out    = { chartData:[{hour,…}], kpi:{dieselSavedKWh, dieselSavedLiters, gridKWh, costBaseline, costReal, economy} }
@@ -114,6 +113,68 @@ export function computeDispatch(inData: {
       costBaseline,
       costReal,
       economy
+    }
+  };
+}
+
+// New function that uses the results from the new simulation
+export function processSimulationResults(simulationResult: {
+  dispatch24h: Array<{
+    hour: number;
+    load: number;
+    pv: number;
+    diesel: number;
+    charge: number;
+    discharge: number;
+    grid: number;
+    soc: number;
+    dieselRef?: number;
+  }>;
+  kpiAnnual: number;
+}, params: {
+  dieselCost: number;
+  dieselYield: number;
+}) {
+  if (!simulationResult || !simulationResult.dispatch24h || !Array.isArray(simulationResult.dispatch24h)) {
+    console.error("Invalid simulation result for processing", simulationResult);
+    return {
+      chartData: [],
+      kpi: {
+        dieselSavedKWh: 0,
+        dieselSavedLiters: 0,
+        costBaseline: 0,
+        costReal: 0,
+        economy: 0
+      }
+    };
+  }
+  
+  // Extract data from simulation result
+  const dispatch = simulationResult.dispatch24h;
+  
+  // Calculate KPIs
+  const dieselBaselineKWh = dispatch.reduce((sum, point) => sum + (point.dieselRef || 0), 0);
+  const dieselRealKWh = dispatch.reduce((sum, point) => sum + (point.diesel || 0), 0);
+  const dieselSavedKWh = dieselBaselineKWh - dieselRealKWh;
+  const dieselSavedLiters = dieselSavedKWh / params.dieselYield;
+  
+  // Calculate costs
+  const costBaseline = dieselBaselineKWh * params.dieselCost / params.dieselYield;
+  
+  // Get the current cost from the simulation or calculate it
+  const costReal = dieselRealKWh * params.dieselCost / params.dieselYield;
+  
+  // Calculate economy
+  const economy = costBaseline - costReal;
+  
+  return {
+    chartData: dispatch,
+    kpi: {
+      dieselSavedKWh,
+      dieselSavedLiters,
+      costBaseline,
+      costReal,
+      economy: simulationResult.kpiAnnual || economy
     }
   };
 }
