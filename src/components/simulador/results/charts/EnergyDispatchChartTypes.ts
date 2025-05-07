@@ -8,7 +8,7 @@ export interface DispatchPoint {
   discharge: number;   // kW descarregando BESS (>=0)
   grid?: number;       // kW comprados (>=0) - opcional
   soc: number;         // 0-100 %
-  dieselRef?: number;  // kW referência diesel sem BESS
+  dieselRef: number;   // Changed from optional to required
 }
 
 export interface EnergyDispatchChartProps {

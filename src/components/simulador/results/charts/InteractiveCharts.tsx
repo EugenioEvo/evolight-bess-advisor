@@ -6,6 +6,7 @@ import { SimuladorFormValues } from '@/schemas/simuladorSchema';
 import { DieselBessChart } from '../diesel-bess/DieselBessChart';
 import { DieselBessKPI } from '../diesel-bess/DieselBessKPI';
 import { processSimulationResults } from '../diesel-bess/computeDispatch';
+import { BessDispatchPoint } from '@/hooks/useBessSimulation';
 
 interface InteractiveChartsProps {
   results: {
@@ -13,7 +14,7 @@ interface InteractiveChartsProps {
     calculatedEnergyKwh: number;
     paybackYears?: number;
     annualSavings?: number;
-    dispatch24h?: any[];
+    dispatch24h?: BessDispatchPoint[];
   };
   formValues: SimuladorFormValues;
 }
