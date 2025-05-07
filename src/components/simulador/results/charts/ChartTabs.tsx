@@ -23,26 +23,36 @@ interface ChartTabsProps {
 }
 
 export function ChartTabs({ results, formValues }: ChartTabsProps) {
-  // Ajuste aqui: usar os valores fixos dos módulos quando os resultados são acima do esperado
-  const bessPower = formValues.bessPowerKw || 108;
-  const bessCapacity = formValues.bessCapacityKwh || 215;
+  // Ensure we have valid values from form or results
+  const bessPower = typeof formValues.bessPowerKw === 'number' && formValues.bessPowerKw > 0 
+    ? formValues.bessPowerKw 
+    : typeof results.calculatedPowerKw === 'number' && results.calculatedPowerKw > 0
+      ? results.calculatedPowerKw
+      : 108; // Default fallback value if both sources are invalid
+      
+  const bessCapacity = typeof formValues.bessCapacityKwh === 'number' && formValues.bessCapacityKwh > 0
+    ? formValues.bessCapacityKwh
+    : typeof results.calculatedEnergyKwh === 'number' && results.calculatedEnergyKwh > 0
+      ? results.calculatedEnergyKwh
+      : 215; // Default fallback value if both sources are invalid
   
-  // Garantir que não exceda os valores do módulo padrão
-  const usedPower = Math.min(results.calculatedPowerKw, bessPower);
-  const usedCapacity = Math.min(results.calculatedEnergyKwh, bessCapacity);
-  
+  // Generate power data with validated values
   const powerData = generatePowerData(
     formValues, 
-    usedCapacity, 
-    usedPower
+    bessCapacity, 
+    bessPower
   );
   
   const socData = generateSoCData(formValues);
   
+  const annualSavings = typeof results.annualSavings === 'number' && results.annualSavings > 0
+    ? results.annualSavings
+    : 50000; // Default fallback value if invalid
+  
   const cashFlowData = generateCashFlowData(
     formValues, 
-    usedCapacity, 
-    results.annualSavings
+    bessCapacity, 
+    annualSavings
   );
   
   const dispatchData = useMemo(() => {

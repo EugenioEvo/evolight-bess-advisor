@@ -21,10 +21,23 @@ interface SummaryDashboardProps {
 }
 
 export function SummaryDashboard({ results, formValues }: SummaryDashboardProps) {
+  // Validate that we have positive numerical values for power and energy
+  const powerKw = typeof results.calculatedPowerKw === 'number' && results.calculatedPowerKw > 0 
+    ? results.calculatedPowerKw 
+    : formValues.bessPowerKw > 0 
+      ? formValues.bessPowerKw 
+      : MODULE_POWER_KW; // Default to module size if both are invalid
+      
+  const energyKwh = typeof results.calculatedEnergyKwh === 'number' && results.calculatedEnergyKwh > 0 
+    ? results.calculatedEnergyKwh 
+    : formValues.bessCapacityKwh > 0 
+      ? formValues.bessCapacityKwh 
+      : MODULE_ENERGY_KWH; // Default to module size if both are invalid
+  
   // Calculate required number of modules
   const bessUnitsRequired = calculateRequiredModules(
-    results.calculatedPowerKw,
-    results.calculatedEnergyKwh
+    powerKw,
+    energyKwh
   );
   
   // Calculate actual power and energy from the number of modules
@@ -46,8 +59,15 @@ export function SummaryDashboard({ results, formValues }: SummaryDashboardProps)
     totalInvestment = actualEnergyKwh * (formValues.bessInstallationCost || 1500);
   }
   
-  const estimatedAnnualSavings = results.annualSavings || 0;
-  const paybackYears = results.paybackYears || 0;
+  // Ensure we have valid numerical values for financial metrics
+  const estimatedAnnualSavings = typeof results.annualSavings === 'number' && results.annualSavings > 0
+    ? results.annualSavings
+    : totalInvestment > 0 ? totalInvestment / 5 : 50000; // Estimate if not provided
+    
+  const paybackYears = typeof results.paybackYears === 'number' && results.paybackYears > 0
+    ? results.paybackYears
+    : estimatedAnnualSavings > 0 ? totalInvestment / estimatedAnnualSavings : 0;
+    
   const isViable = results.isViable !== undefined 
     ? results.isViable 
     : (paybackYears > 0 && paybackYears < formValues.horizonYears);

@@ -4,18 +4,35 @@ import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 export function generatePowerData(formValues: SimuladorFormValues, batteryCap: number, batteryPower: number) {
   const hourlyData = [];
   
-  // Determinar fonte de dados de carga
+  // Ensure all input parameters have valid values with proper fallbacks
   const useHourlyValues = formValues.loadEntryMethod === "hourly" && formValues.hourlyDemandKw.some(v => v > 0);
-  const peakDemand = formValues.avgPeakDemandKw;
-  const offpeakDemand = formValues.avgOffpeakDemandKw;
-  const maxPeakDemand = formValues.maxPeakDemandKw;
-  const maxOffpeakDemand = formValues.maxOffpeakDemandKw;
-  const pvPower = formValues.hasPv ? formValues.pvPowerKwp : 0;
-  const peakStartHour = formValues.peakStartHour;
-  const peakEndHour = formValues.peakEndHour;
-  const peakShavingStartHour = formValues.peakShavingStartHour;
-  const peakShavingEndHour = formValues.peakShavingEndHour;
-  const dieselPower = formValues.hasDiesel ? formValues.dieselPowerKw : 0;
+  const peakDemand = typeof formValues.avgPeakDemandKw === 'number' && formValues.avgPeakDemandKw > 0 
+    ? formValues.avgPeakDemandKw : 50;
+  const offpeakDemand = typeof formValues.avgOffpeakDemandKw === 'number' && formValues.avgOffpeakDemandKw > 0
+    ? formValues.avgOffpeakDemandKw : 40;
+  const maxPeakDemand = typeof formValues.maxPeakDemandKw === 'number' && formValues.maxPeakDemandKw > 0
+    ? formValues.maxPeakDemandKw : peakDemand * 1.5;
+  const maxOffpeakDemand = typeof formValues.maxOffpeakDemandKw === 'number' && formValues.maxOffpeakDemandKw > 0
+    ? formValues.maxOffpeakDemandKw : offpeakDemand * 1.5;
+    
+  // Ensure PV power is always a valid number
+  const pvPower = formValues.hasPv && typeof formValues.pvPowerKwp === 'number' && formValues.pvPowerKwp > 0
+    ? formValues.pvPowerKwp : 0;
+    
+  const peakStartHour = typeof formValues.peakStartHour === 'number' ? formValues.peakStartHour : 18;
+  const peakEndHour = typeof formValues.peakEndHour === 'number' ? formValues.peakEndHour : 21;
+  const peakShavingStartHour = typeof formValues.peakShavingStartHour === 'number' 
+    ? formValues.peakShavingStartHour : peakStartHour;
+  const peakShavingEndHour = typeof formValues.peakShavingEndHour === 'number'
+    ? formValues.peakShavingEndHour : peakEndHour;
+    
+  // Ensure diesel power is valid
+  const dieselPower = formValues.hasDiesel && typeof formValues.dieselPowerKw === 'number' && formValues.dieselPowerKw > 0
+    ? formValues.dieselPowerKw : 0;
+  
+  // Validate battery parameters
+  const validBatteryPower = typeof batteryPower === 'number' && batteryPower > 0 ? batteryPower : 108;
+  const validBatteryCap = typeof batteryCap === 'number' && batteryCap > 0 ? batteryCap : 215;
   
   for (let hour = 0; hour < 24; hour++) {
     // Determine if current hour is peak
@@ -26,9 +43,9 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     // Determinar loadKw com base no método de entrada
     let loadKw = 0;
     
-    if (useHourlyValues) {
-      // Use dados horários inseridos pelo usuário
-      loadKw = formValues.hourlyDemandKw[hour];
+    if (useHourlyValues && Array.isArray(formValues.hourlyDemandKw) && formValues.hourlyDemandKw.length > hour) {
+      // Use dados horários inseridos pelo usuário, com validação para evitar undefined
+      loadKw = typeof formValues.hourlyDemandKw[hour] === 'number' ? formValues.hourlyDemandKw[hour] : 0;
     } else {
       // Use o perfil sintético calculado
       if (isPeakHour) {
@@ -65,17 +82,20 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     let bessKw = 0;
     if (isPeakShavingHour && formValues.usePeakShaving) {
       // Valor negativo para BESS descarregando durante peak shaving (apoiando a rede)
-      if (formValues.peakShavingMethod === 'percentage') {
+      if (formValues.peakShavingMethod === 'percentage' && typeof formValues.peakShavingPercentage === 'number') {
         bessKw = -loadKw * formValues.peakShavingPercentage / 100;
-      } else {
+      } else if (typeof formValues.peakShavingTarget === 'number') {
         bessKw = -formValues.peakShavingTarget;
+      } else {
+        // Fallback if no valid peak shaving parameters are provided
+        bessKw = -loadKw * 0.3; // Default to 30% peak shaving
       }
       
       // Ensure discharge doesn't exceed battery power
-      if (bessKw < -batteryPower) bessKw = -batteryPower;
+      if (bessKw < -validBatteryPower) bessKw = -validBatteryPower;
     } else if (hour >= 1 && hour <= 5 && formValues.useArbitrage) {
       // Valor positivo para BESS carregando durante off-peak (consumindo da rede)
-      bessKw = batteryPower * 0.8;
+      bessKw = validBatteryPower * 0.8;
     }
     
     // Calculate grid power - remaining load after accounting for PV, BESS, and diesel

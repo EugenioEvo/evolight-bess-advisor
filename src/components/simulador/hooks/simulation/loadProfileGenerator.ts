@@ -37,9 +37,11 @@ export function generateLoadProfile(values: SimuladorFormValues): number[] {
 
 /**
  * Generate a synthetic PV profile based on form values
+ * 
+ * @returns An array of hourly PV generation values (kW). Returns an empty array if PV is not used.
  */
 export function generatePvProfile(values: SimuladorFormValues): number[] {
-  // Return empty array instead of undefined when PV is not used
+  // Important fix: Return empty array instead of undefined when PV is not used
   if (!values.hasPv || values.pvPowerKwp <= 0) {
     return [];
   }
