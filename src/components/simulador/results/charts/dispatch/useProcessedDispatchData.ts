@@ -25,8 +25,8 @@ export function useProcessedDispatchData(data: DispatchPoint[] | BessDispatchPoi
         pv: Number(d.pv ?? row.pv),
         
         /* ESSENCIAL ➜ área negativa! */
-        negDis: -discharge,
-        discharge,          // se quiser mostrar tooltip positivo
+        negDis: -Math.abs(discharge), // Garantindo que será sempre negativo
+        discharge,                    // Mantém descarga positiva para tooltip
         
         soc: Number(d.soc ?? row.soc),
         totalLoad: Number(d.load ?? row.load) // The total load line should always show the original load
