@@ -93,8 +93,8 @@ function buildBackupParams(values: SimuladorFormValues) {
 function buildBessTechnicalParams(values: SimuladorFormValues) {
   // Calculate charge and discharge efficiencies separately
   // 95% default for each direction (charging and discharging)
-  const ηc = values.chargeEff ?? 0.95;
-  const ηd = values.dischargeEff ?? 0.95;
+  const ηc = (values.chargeEff ?? 95) / 100; // Convert from percentage to decimal
+  const ηd = (values.dischargeEff ?? 95) / 100; // Convert from percentage to decimal
   const ηrt = ηc * ηd; // ~0.903 roundtrip efficiency
   
   return {

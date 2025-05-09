@@ -48,6 +48,8 @@ export const simuladorFormSchema = z.object({
   bessLifetime: z.coerce.number().min(1).max(30).default(10),
   bessAnnualDegradation: z.coerce.number().min(0).max(10).default(1),
   bessDailySelfdischarge: z.coerce.number().min(0).max(5).default(0.1),
+  chargeEff: z.coerce.number().min(50, { message: "Eficiência mínima é 50%" }).max(100, { message: "Eficiência máxima é 100%" }).default(95),
+  dischargeEff: z.coerce.number().min(50, { message: "Eficiência mínima é 50%" }).max(100, { message: "Eficiência máxima é 100%" }).default(95),
 
   // Sistema Solar
   hasPv: z.boolean().default(false),

@@ -70,12 +70,47 @@ export function BessSection({ form }: BessSectionProps) {
         
         <FormField
           control={form.control}
+          name="chargeEff"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Eficiência de Carga (%)</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.1" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="dischargeEff"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Eficiência de Descarga (%)</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.1" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
           name="bessEfficiency"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Eficiência (%)</FormLabel>
+              <FormLabel>Eficiência Roundtrip (%)</FormLabel>
               <FormControl>
-                <Input type="number" step="0.1" {...field} />
+                <Input 
+                  type="number" 
+                  step="0.1" 
+                  {...field} 
+                  disabled 
+                  value={(form.watch("chargeEff") * form.watch("dischargeEff") / 100).toFixed(1)}
+                  title="Calculado automaticamente a partir das eficiências de carga e descarga"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

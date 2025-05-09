@@ -45,6 +45,8 @@ export function useSimuladorForm() {
       bessLifetime: 10,
       bessAnnualDegradation: 1.0,
       bessDailySelfdischarge: 0.1,
+      chargeEff: 95,          // New default value for charge efficiency
+      dischargeEff: 95,       // New default value for discharge efficiency
       
       // Sistema Solar
       hasPv: false,
