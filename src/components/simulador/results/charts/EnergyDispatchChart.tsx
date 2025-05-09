@@ -27,6 +27,18 @@ export function EnergyDispatchChart({
   const chartColors = useChartColors();
   const processedData = useProcessedDispatchData(data);
 
+  // Add debug logging to check if we have data
+  console.log("EnergyDispatchChart data:", data);
+  console.log("Processed data length:", processedData.length);
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full flex items-center justify-center h-[400px]">
+        <p className="text-muted-foreground">Sem dados de despacho disponíveis</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <h3 className="text-lg font-medium mb-2">{title}</h3>

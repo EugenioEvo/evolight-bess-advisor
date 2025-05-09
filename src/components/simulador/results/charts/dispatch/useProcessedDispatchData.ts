@@ -1,15 +1,20 @@
+
 import { useMemo } from 'react';
 import { DispatchPoint } from '../EnergyDispatchChartTypes';
 import { BessDispatchPoint } from '@/hooks/bessSimulation/types';
 
 export function useProcessedDispatchData(data: DispatchPoint[] | BessDispatchPoint[]) {
   return useMemo(() => {
-    // Garantir 24 pontos
+    // Ensure we have 24 points with default values
     const fill = Array.from({ length: 24 }, (_, h) => ({
       hour: h, grid: 0, charge: 0, discharge: 0, diesel: 0, pv: 0, load: 0, soc: 0, dieselRef: 0
     }));
 
+    // Log the incoming data to help debugging
+    console.log("Processing dispatch data:", data);
+
     const merged = fill.map((row, h) => {
+      // Find matching data point or use default
       const d = data.find(p => p.hour === h) ?? row;
       const discharge = Number(d.discharge ?? 0);
 
@@ -23,15 +28,16 @@ export function useProcessedDispatchData(data: DispatchPoint[] | BessDispatchPoi
         dieselRef: Number(d.dieselRef ?? row.dieselRef),
         pv: Number(d.pv ?? row.pv),
         
-        /* ESSENCIAL ➜ área negativa! */
-        negDis: -Math.abs(discharge), // Garantindo que será sempre negativo
-        discharge,                    // Mantém descarga positiva para tooltip
+        /* Essential for displaying discharge as negative area */
+        negDis: -Math.abs(discharge), // Always negative for stacking
+        discharge,                    // Keep positive for tooltip
         
         soc: Number(d.soc ?? row.soc),
-        totalLoad: Number(d.load ?? row.load) // The total load line should always show the original load
+        totalLoad: Number(d.load ?? row.load) // Total load line always shows original load
       };
     });
 
+    console.log("Processed dispatch data:", merged);
     return merged;
   }, [data]);
 }

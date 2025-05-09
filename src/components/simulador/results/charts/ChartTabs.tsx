@@ -67,7 +67,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
   const dispatchData = useMemo(() => {
     if (hasRealDispatchData) {
       console.log("Using real dispatch data:", results.dispatch24h);
-      return results.dispatch24h.map(point => ({
+      return results.dispatch24h!.map(point => ({
         hour: point.hour as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23,
         load: point.load,
         pv: point.pv,
@@ -83,6 +83,9 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
       return generateEnergyDispatchData(powerData, socData);
     }
   }, [hasRealDispatchData, results.dispatch24h, powerData, socData]);
+  
+  // Add more debug logging
+  console.log("Dispatch data for chart:", dispatchData);
   
   return (
     <Tabs defaultValue="dispatch">

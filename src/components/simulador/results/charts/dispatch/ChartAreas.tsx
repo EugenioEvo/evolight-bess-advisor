@@ -11,13 +11,15 @@ interface ChartAreasProps {
     grid: string;
     load: string;
     soc: string;
+    peakArea?: string;
+    chargeArea?: string;
   };
 }
 
 export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
   return (
     <>
-      {/* Ordem: grid → cargaBESS → descargaBESS → diesel → pv */}
+      {/* Stacking order: grid → charge → discharge → diesel → pv */}
       <Area 
         yAxisId="left" 
         dataKey="grid" 
@@ -25,6 +27,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         fill={chartColors.grid} 
         stroke="none"
         name="Rede"
+        isAnimationActive={true}
       />
       
       <Area 
@@ -34,6 +37,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         fill={chartColors.charge} 
         stroke="none"
         name="BESS (carga)"
+        isAnimationActive={true}
       />
       
       <Area 
@@ -43,6 +47,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         fill={chartColors.discharge} 
         stroke="none"
         name="BESS (descarga)"
+        isAnimationActive={true}
       />
       
       <Area 
@@ -52,6 +57,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         fill={chartColors.diesel} 
         stroke="none"
         name="Diesel"
+        isAnimationActive={true}
       />
       
       <Area 
@@ -61,6 +67,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         fill={chartColors.pv} 
         stroke="none"
         name="Fotovoltaico"
+        isAnimationActive={true}
       />
       
       {/* Load line - always showing the original load */}
@@ -71,6 +78,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         strokeDasharray="6 4" 
         dot={false}
         name="Carga Cliente"
+        isAnimationActive={true}
       />
       
       <Line 
@@ -79,6 +87,7 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         stroke={chartColors.soc} 
         dot={false}
         name="SoC BESS"
+        isAnimationActive={true}
       />
     </>
   );

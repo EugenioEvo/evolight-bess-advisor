@@ -1,22 +1,21 @@
 
-import { useTheme } from "next-themes";
 import { useMemo } from 'react';
+import { useTheme } from 'next-themes';
 
 export function useChartColors() {
   const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   
-  return useMemo(() => {
-    return {
-      pv: resolvedTheme === 'dark' ? '#fff4af' : '#ffe58a',
-      diesel: resolvedTheme === 'dark' ? '#e0b68a' : '#cfa67d',
-      discharge: resolvedTheme === 'dark' ? '#b3edb9' : '#98e3a1',
-      charge: resolvedTheme === 'dark' ? '#b8d1ff' : '#a1c4ff',
-      grid: resolvedTheme === 'dark' ? '#d9d9d9' : '#c8c8c8',
-      load: resolvedTheme === 'dark' ? '#000000' : '#000000',
-      soc: resolvedTheme === 'dark' ? '#b280e3' : '#7423c6',
-      peakArea: resolvedTheme === 'dark' ? 'rgba(255,100,100,0.05)' : 'rgba(255,100,100,0.1)',
-      chargeArea: resolvedTheme === 'dark' ? 'rgba(100,100,255,0.05)' : 'rgba(100,100,255,0.1)',
-      dieselRef: resolvedTheme === 'dark' ? '#b37a38' : '#8b5a2b'
-    };
-  }, [resolvedTheme]);
+  return useMemo(() => ({
+    pv: isDark ? '#f97316' : '#f97316',           // Orange
+    diesel: isDark ? '#fbbf24' : '#f59e0b',       // Amber
+    discharge: isDark ? '#4ade80' : '#22c55e',    // Green
+    charge: isDark ? '#c4b5fd' : '#8b5cf6',       // Purple
+    grid: isDark ? '#fca5a5' : '#ef4444',         // Red
+    load: isDark ? '#e5e5e5' : '#333333',         // Gray
+    soc: isDark ? '#7dd3fc' : '#0ea5e9',          // Blue
+    dieselRef: isDark ? '#fde68a' : '#facc15',    // Yellow
+    peakArea: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',  // Light red
+    chargeArea: isDark ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.1)'  // Light purple
+  }), [isDark]);
 }
