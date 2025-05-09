@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChartTabs } from './ChartTabs';
-import { SimuladorFormValues } from '@/schemas/simuladorSchema';
+import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { DieselBessChart } from '../diesel-bess/DieselBessChart';
 import { DieselBessKPI } from '../diesel-bess/DieselBessKPI';
 import { processSimulationResults } from '../diesel-bess/computeDispatch';
-import { BessDispatchPoint } from '@/hooks/useBessSimulation';
+import { BessDispatchPoint } from '@/hooks/bessSimulation/types';
 
 interface InteractiveChartsProps {
   results: {

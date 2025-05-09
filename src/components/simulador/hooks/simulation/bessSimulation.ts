@@ -1,6 +1,7 @@
+
 import { toast } from "sonner";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
-import { BessSimulationResult } from "@/hooks/useBessSimulation";
+import { BessSimulationResult } from "@/hooks/bessSimulation/types";
 import { SimulationResults, SimulationResponse } from "./types";
 
 /**

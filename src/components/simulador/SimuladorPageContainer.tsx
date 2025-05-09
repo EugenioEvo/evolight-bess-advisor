@@ -32,7 +32,7 @@ export function SimuladorPageContainer() {
     
     try {
       const result = await runSimulation(values);
-      if (result.success) {
+      if (result.success && result.results) {
         form.setValue('bessPowerKw', result.results.calculatedPowerKw);
         form.setValue('bessCapacityKwh', result.results.calculatedEnergyKwh);
         setActiveTab("analise");

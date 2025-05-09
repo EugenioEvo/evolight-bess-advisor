@@ -1,7 +1,6 @@
-
 import { useMemo } from 'react';
 import { DispatchPoint } from '../EnergyDispatchChartTypes';
-import { BessDispatchPoint } from '@/hooks/useBessSimulation';
+import { BessDispatchPoint } from '@/hooks/bessSimulation/types';
 
 export function useProcessedDispatchData(data: DispatchPoint[] | BessDispatchPoint[]) {
   return useMemo(() => {

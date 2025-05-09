@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useBessSize } from '@/hooks/useBessSize';
-import { useBessSimulation } from '@/hooks/useBessSimulation';
+import { useBessSimulation } from '@/hooks/bessSimulation/useBessSimulation';
 import { toast } from "sonner";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { SimulationResults } from "./simulation/types";
