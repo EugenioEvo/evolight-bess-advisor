@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { SimuladorFormValues } from '@/schemas/simuladorSchema';
 import { supabase } from '@/integrations/supabase/client';
@@ -162,6 +161,7 @@ function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
     psValue = formValues.peakShavingTarget || 0;
   }
 
+  // Make sure to use the new charge and discharge efficiency values
   return {
     load: loadProfile,
     pv: formValues.hasPv ? pvProfile : undefined,
@@ -178,9 +178,9 @@ function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
     useARB: formValues.useArbitrage,
     modulePower: 108,
     moduleEnergy: 215,
-    chargeEff: (formValues.bessEfficiency || 90) / 100,
-    dischargeEff: (formValues.bessEfficiency || 90) / 100,
-    roundEff: Math.pow((formValues.bessEfficiency || 90) / 100, 2),
+    chargeEff: (formValues.chargeEff || 95) / 100,
+    dischargeEff: (formValues.dischargeEff || 95) / 100,
+    roundEff: ((formValues.chargeEff || 95) / 100) * ((formValues.dischargeEff || 95) / 100),
     maxSoC: 1.0,
     minSoC: 1.0 - (formValues.bessMaxDod || 85) / 100,
     chargeWindow: [1, 5] // Default charging window for arbitrage (early morning)
