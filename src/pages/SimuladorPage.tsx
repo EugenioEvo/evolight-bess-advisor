@@ -58,6 +58,7 @@ const SimuladorPage = () => {
       pvDataEntryMethod: "power",
       pvPowerKwp: 0,
       pvAnnualGeneration: 0,
+      pvProfileData: [], // Initialize the PV profile data
       pvPolicy: "inject",
       
       // Estrutura Tarifária

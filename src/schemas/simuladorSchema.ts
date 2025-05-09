@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const simuladorFormSchema = z.object({
@@ -53,6 +54,8 @@ export const simuladorFormSchema = z.object({
   pvDataEntryMethod: z.enum(["power", "upload"]).default("power"),
   pvPowerKwp: z.coerce.number().min(0).default(0),
   pvAnnualGeneration: z.coerce.number().min(0).default(0),
+  // New field for PV profile data from file upload
+  pvProfileData: z.array(z.number()).optional(),
   pvPolicy: z.enum(["inject", "grid_zero"]).default("inject"),
   
   // Estrutura Tarifária

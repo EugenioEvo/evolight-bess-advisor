@@ -54,6 +54,12 @@ export function generatePvProfile(values: SimuladorFormValues): number[] {
     return [];
   }
   
+  // If we have uploaded PV profile data, use that
+  if (values.pvDataEntryMethod === "upload" && Array.isArray(values.pvProfileData) && values.pvProfileData.length > 0) {
+    console.log("Using uploaded PV profile data:", values.pvProfileData);
+    return values.pvProfileData;
+  }
+  
   console.log("Generating PV profile with power:", values.pvPowerKwp);
   // Generate a synthetic profile based on typical solar production curve
   const pvFactors = [0, 0, 0, 0, 0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0, 0.9, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0, 0, 0, 0];
