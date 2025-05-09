@@ -4,7 +4,7 @@ import { EnergyDispatchChart } from '../EnergyDispatchChart';
 import { EnergyFlowChart } from './EnergyFlowChart';
 import { DispatchPoint } from '../EnergyDispatchChartTypes';
 import { Button } from '@/components/ui/button';
-import { ChartLine, Flow } from 'lucide-react';
+import { ChartLine, ArrowRight } from 'lucide-react';
 
 interface EnergyDispatchVisualizationProps {
   data: DispatchPoint[];
@@ -35,7 +35,7 @@ export function EnergyDispatchVisualization({
             onClick={() => setViewMode('flow')}
             className="flex items-center gap-2"
           >
-            <Flow size={16} />
+            <ArrowRight size={16} />
             <span>Fluxograma</span>
           </Button>
           <Button 

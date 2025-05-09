@@ -4,7 +4,7 @@ import { Area, ComposedChart, CartesianGrid, Line, Tooltip, XAxis, YAxis, Legend
 import { useChartColors } from '../charts/dispatch/useChartColors';
 import { EnergyFlowChart } from '../charts/dispatch/EnergyFlowChart';
 import { Button } from '@/components/ui/button';
-import { ChartLine, Flow } from 'lucide-react';
+import { ChartLine, ArrowRight } from 'lucide-react';
 
 interface DieselBessChartProps {
   data: Array<{
@@ -36,7 +36,7 @@ export function DieselBessChart({ data }: DieselBessChartProps) {
             onClick={() => setViewMode('flow')}
             className="flex items-center gap-2"
           >
-            <Flow size={16} />
+            <ArrowRight size={16} />
             <span>Fluxograma</span>
           </Button>
           <Button 
