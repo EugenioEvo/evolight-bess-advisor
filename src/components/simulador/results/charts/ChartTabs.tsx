@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PowerChart } from './PowerChart';
 import { SocChart } from './SocChart';
 import { CashFlowChart } from './CashFlowChart';
-import { EnergyDispatchChart } from './EnergyDispatchChart';
+import { EnergyDispatchVisualization } from './dispatch/EnergyDispatchVisualization';
 import { generatePowerData } from './data-generators/powerDataGenerator';
 import { generateSoCData } from './data-generators/socDataGenerator';
 import { generateCashFlowData } from './data-generators/cashFlowDataGenerator';
@@ -99,7 +99,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
       <TabsContent value="dispatch">
         <Card className="h-[450px]">
           <CardContent className="p-4 h-full">
-            <EnergyDispatchChart 
+            <EnergyDispatchVisualization 
               data={dispatchData} 
               highlightPeakHours={true}
               peakStartHour={formValues.peakStartHour}

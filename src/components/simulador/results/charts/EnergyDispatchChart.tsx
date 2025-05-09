@@ -13,6 +13,7 @@ import { useChartColors } from './dispatch/useChartColors';
 import { useProcessedDispatchData } from './dispatch/useProcessedDispatchData';
 import { EnergyDispatchChartProps } from './EnergyDispatchChartTypes';
 import { ChartContainer } from '@/components/ui/chart/ChartContainer';
+import { EnergyDispatchVisualization } from './dispatch/EnergyDispatchVisualization';
 
 export { type DispatchPoint } from './EnergyDispatchChartTypes';
 
@@ -40,9 +41,9 @@ export function EnergyDispatchChart({
   }
 
   return (
-    <div className="w-full">
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <div className="h-[420px]">
+    <div className="w-full h-full">
+      {title && <h3 className="text-lg font-medium mb-2">{title}</h3>}
+      <div className="h-[400px]">
         <ChartContainer
           config={{
             pv: { theme: { light: "#f97316", dark: "#f97316" } },
