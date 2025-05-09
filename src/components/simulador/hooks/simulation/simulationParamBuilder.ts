@@ -91,14 +91,16 @@ function buildBackupParams(values: SimuladorFormValues) {
  * Build BESS technical parameters
  */
 function buildBessTechnicalParams(values: SimuladorFormValues) {
-  // Garanta um valor padrão para a eficiência da bateria
-  const efficiency = typeof values.bessEfficiency === 'number' && values.bessEfficiency > 0 
-    ? values.bessEfficiency / 100 
-    : 0.9;
-    
+  // Calculate charge and discharge efficiencies separately
+  // 95% default for each direction (charging and discharging)
+  const ηc = values.chargeEff ?? 0.95;
+  const ηd = values.dischargeEff ?? 0.95;
+  const ηrt = ηc * ηd; // ~0.903 roundtrip efficiency
+  
   return {
-    discharge_eff: Math.sqrt(efficiency),
-    charge_eff: Math.sqrt(efficiency)
+    discharge_eff: ηd,
+    charge_eff: ηc,
+    roundtrip_eff: ηrt
   };
 }
 

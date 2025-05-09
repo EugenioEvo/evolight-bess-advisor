@@ -24,6 +24,7 @@ export interface SizingParams {
 export interface BessTechnicalParams {
   discharge_eff: number;
   charge_eff: number;
+  roundtrip_eff?: number;
 }
 
 export interface SimulationParams {
