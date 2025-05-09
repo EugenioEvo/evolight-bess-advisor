@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Home } from 'lucide-react';
 
 interface LoadSectionProps {
   currentData: any;
@@ -20,12 +20,15 @@ export function LoadSection({
           <ArrowRight className="text-muted-foreground animate-pulse" />
         </div>
         <div 
-          className="w-full h-16 rounded-lg flex items-center justify-center"
+          className="w-full h-16 rounded-lg flex items-center justify-center px-3"
           style={{ backgroundColor: chartColors.load, color: 'white' }}
         >
-          <div className="text-center">
-            <div className="font-bold">Carga do Cliente</div>
-            <div>{formatNumber(currentData.load)} kW</div>
+          <div className="flex items-center gap-4">
+            <Home size={24} />
+            <div className="text-center">
+              <div className="font-bold">Carga do Cliente</div>
+              <div>{formatNumber(currentData.load)} kW</div>
+            </div>
           </div>
         </div>
       </div>

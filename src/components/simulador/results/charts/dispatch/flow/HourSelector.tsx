@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Clock } from 'lucide-react';
 
 interface HourSelectorProps {
   hour: number;
@@ -11,9 +12,12 @@ export function HourSelector({ hour, onHourChange }: HourSelectorProps) {
     onHourChange(Number(e.target.value));
   };
 
+  // Format hour display
+  const formattedHour = `${hour.toString().padStart(2, '0')}:00`;
+
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">Hora:</span>
+    <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-full">
+      <Clock size={16} className="text-muted-foreground" />
       <input
         type="range"
         min="0"
@@ -22,7 +26,7 @@ export function HourSelector({ hour, onHourChange }: HourSelectorProps) {
         onChange={handleHourChange}
         className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
       />
-      <span className="text-sm text-muted-foreground">{hour}:00</span>
+      <span className="text-sm text-muted-foreground w-12">{formattedHour}</span>
     </div>
   );
 }

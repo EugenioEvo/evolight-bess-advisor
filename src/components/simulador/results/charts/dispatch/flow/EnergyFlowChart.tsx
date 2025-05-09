@@ -35,7 +35,25 @@ export function EnergyFlowChart({ data, hour = 12, onHourChange }: EnergyFlowPro
       </div>
 
       <div className="flex-1 bg-muted/20 rounded-lg p-4 overflow-auto">
-        <div className="flex flex-col gap-6 h-full">
+        <div className="flex flex-col gap-6 h-full relative">
+          {/* Connection lines to create the spider web effect */}
+          <div className="absolute inset-0 pointer-events-none">
+            <svg className="w-full h-full">
+              {/* These SVG paths will be dynamically drawn based on the energy flow */}
+              {currentData.pv > 0 && (
+                <path 
+                  d="M 100,100 L 50%,50%" 
+                  stroke={chartColors.pv} 
+                  strokeWidth="2"
+                  strokeDasharray={currentData.pv > 10 ? "none" : "5,5"}
+                  fill="none"
+                  className="animate-pulse"
+                />
+              )}
+              {/* More dynamic paths will be added */}
+            </svg>
+          </div>
+          
           {/* Energy sources */}
           <EnergySourcesSection 
             currentData={currentData} 
