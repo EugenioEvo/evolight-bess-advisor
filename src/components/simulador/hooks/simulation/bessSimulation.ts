@@ -53,7 +53,7 @@ export function processBessSimulationResult(
         roi: (annualSavings * formValues.horizonYears) / totalInvestment * 100,
         npv: 0, // Simplified financial calculation
         isViable: paybackYears > 0 && paybackYears < formValues.horizonYears,
-        dispatch24h: bessResult.dispatch24h,
+        dispatch24h: bessResult.dispatch24h || [], // Always provide an array, even if empty
       }
     };
   } catch (error) {

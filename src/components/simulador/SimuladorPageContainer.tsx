@@ -32,6 +32,8 @@ export function SimuladorPageContainer() {
     
     try {
       const result = await runSimulation(values);
+      console.log("Simulation result:", result);
+      
       if (result.success && result.results) {
         // Only access results properties if they exist
         form.setValue('bessPowerKw', result.results.calculatedPowerKw);

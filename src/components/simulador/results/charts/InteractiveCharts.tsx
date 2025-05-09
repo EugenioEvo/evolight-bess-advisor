@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChartTabs } from './ChartTabs';
@@ -19,7 +20,8 @@ interface InteractiveChartsProps {
 }
 
 export function InteractiveCharts({ results, formValues }: InteractiveChartsProps) {
-  // Check if we have dispatch data from the new simulation
+  console.log("Interactive Charts Results:", results);
+  // Check if we have dispatch data from the simulation
   const hasDispatchData = results.dispatch24h && Array.isArray(results.dispatch24h) && results.dispatch24h.length > 0;
   
   // Process diesel BESS data if we have dispatch data

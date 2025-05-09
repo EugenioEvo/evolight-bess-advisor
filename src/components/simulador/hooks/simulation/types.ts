@@ -3,6 +3,8 @@
  * Types for the simulation results and related data
  */
 
+import { BessDispatchPoint } from "@/hooks/bessSimulation/types";
+
 export type SimulationResults = {
   calculatedPowerKw: number;
   calculatedEnergyKwh: number;
@@ -11,7 +13,7 @@ export type SimulationResults = {
   roi?: number;
   npv?: number;
   isViable?: boolean;
-  dispatch24h?: any[];
+  dispatch24h?: BessDispatchPoint[];
 };
 
 export type SimulationResponse = {
