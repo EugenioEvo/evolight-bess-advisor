@@ -23,7 +23,7 @@ interface ChartTabsProps {
 }
 
 export function ChartTabs({ results, formValues }: ChartTabsProps) {
-  // Ensure we have valid values from form or results
+  // Ensure we have valid values from form or results - no longer limiting to max values
   const bessPower = typeof formValues.bessPowerKw === 'number' && formValues.bessPowerKw > 0 
     ? formValues.bessPowerKw 
     : typeof results.calculatedPowerKw === 'number' && results.calculatedPowerKw > 0
