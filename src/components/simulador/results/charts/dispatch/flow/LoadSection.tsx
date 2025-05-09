@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
 
 interface LoadSectionProps {
   currentData: any;
@@ -14,22 +14,21 @@ export function LoadSection({
   formatNumber
 }: LoadSectionProps) {
   return (
-    <div className="flex justify-center h-1/3">
-      <div className="flex-1 flex flex-col items-center max-w-md">
-        <div className="flex items-center mb-2">
-          <ArrowRight className="text-muted-foreground animate-pulse" />
+    <div className="w-40 h-40 relative">
+      <div 
+        className="w-full h-full rounded-lg flex flex-col items-center justify-center p-3 shadow-lg border-2 transform transition-transform hover:scale-105"
+        style={{ 
+          backgroundColor: chartColors.load + '20', 
+          borderColor: chartColors.load,
+          color: 'inherit'
+        }}
+      >
+        <div className="mb-2">
+          <Home size={28} />
         </div>
-        <div 
-          className="w-full h-16 rounded-lg flex items-center justify-center px-3"
-          style={{ backgroundColor: chartColors.load, color: 'white' }}
-        >
-          <div className="flex items-center gap-4">
-            <Home size={24} />
-            <div className="text-center">
-              <div className="font-bold">Carga do Cliente</div>
-              <div>{formatNumber(currentData.load)} kW</div>
-            </div>
-          </div>
+        <div className="text-center">
+          <div className="font-bold text-lg">Carga</div>
+          <div className="mt-1 text-xl font-semibold">{formatNumber(currentData.load)} kW</div>
         </div>
       </div>
     </div>

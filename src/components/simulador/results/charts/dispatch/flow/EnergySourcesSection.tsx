@@ -1,82 +1,62 @@
 
 import React from 'react';
-import { ArrowRight, Sun, Grid, Fuel } from 'lucide-react';
+import { Sun, Grid as GridIcon, Fuel } from 'lucide-react';
 
 interface EnergySourcesSectionProps {
+  type: 'pv' | 'grid' | 'diesel';
   currentData: any;
   chartColors: Record<string, string>;
   formatNumber: (num: number) => string;
 }
 
 export function EnergySourcesSection({ 
+  type,
   currentData, 
   chartColors, 
   formatNumber 
 }: EnergySourcesSectionProps) {
+  // Define source-specific props
+  const sourceConfig = {
+    pv: {
+      value: currentData.pv,
+      color: chartColors.pv,
+      icon: <Sun size={28} className="animate-pulse" />,
+      label: "Fotovoltaico"
+    },
+    grid: {
+      value: currentData.grid,
+      color: chartColors.grid,
+      icon: <GridIcon size={28} />,
+      label: "Rede"
+    },
+    diesel: {
+      value: currentData.diesel,
+      color: chartColors.diesel,
+      icon: <Fuel size={28} />,
+      label: "Diesel"
+    }
+  };
+  
+  const { value, color, icon, label } = sourceConfig[type];
+  
+  if (value <= 0) {
+    return null;
+  }
+  
   return (
-    <div className="flex justify-between gap-4 h-1/3">
-      {/* PV Source */}
-      {currentData.pv > 0 && (
-        <div className="flex-1 flex flex-col items-center">
-          <div 
-            className="w-full h-16 rounded-lg flex items-center justify-between text-white mb-2 px-3"
-            style={{ backgroundColor: chartColors.pv }}
-          >
-            <div className="flex items-center gap-2">
-              <Sun size={24} className="animate-pulse" />
-            </div>
-            <div className="text-center">
-              <div className="font-bold">Fotovoltaico</div>
-              <div>{formatNumber(currentData.pv)} kW</div>
-            </div>
-          </div>
-          <div className="flex items-center h-8">
-            <ArrowRight className="text-muted-foreground animate-pulse" />
-          </div>
+    <div className="w-40 h-40 relative">
+      <div 
+        className="w-full h-full rounded-lg flex flex-col items-center justify-center p-3 text-white shadow-lg border-2 transform transition-transform hover:scale-105"
+        style={{ backgroundColor: color, borderColor: `${color}40` }}
+      >
+        <div className="mb-2">
+          {icon}
         </div>
-      )}
-      
-      {/* Grid Source */}
-      {currentData.grid > 0 && (
-        <div className="flex-1 flex flex-col items-center">
-          <div 
-            className="w-full h-16 rounded-lg flex items-center justify-between text-white mb-2 px-3"
-            style={{ backgroundColor: chartColors.grid }}
-          >
-            <div className="flex items-center gap-2">
-              <Grid size={24} />
-            </div>
-            <div className="text-center">
-              <div className="font-bold">Rede</div>
-              <div>{formatNumber(currentData.grid)} kW</div>
-            </div>
-          </div>
-          <div className="flex items-center h-8">
-            <ArrowRight className="text-muted-foreground animate-pulse" />
-          </div>
+        <div className="text-center">
+          <div className="font-bold text-lg">{label}</div>
+          <div className="mt-1 text-xl font-semibold">{formatNumber(value)} kW</div>
         </div>
-      )}
-      
-      {/* Diesel Source */}
-      {currentData.diesel > 0 && (
-        <div className="flex-1 flex flex-col items-center">
-          <div 
-            className="w-full h-16 rounded-lg flex items-center justify-between text-white mb-2 px-3"
-            style={{ backgroundColor: chartColors.diesel }}
-          >
-            <div className="flex items-center gap-2">
-              <Fuel size={24} />
-            </div>
-            <div className="text-center">
-              <div className="font-bold">Diesel</div>
-              <div>{formatNumber(currentData.diesel)} kW</div>
-            </div>
-          </div>
-          <div className="flex items-center h-8">
-            <ArrowRight className="text-muted-foreground animate-pulse" />
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

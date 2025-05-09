@@ -6,7 +6,6 @@ import { LoadSection } from './LoadSection';
 import { EnergyFlowLegend } from './EnergyFlowLegend';
 import { HourSelector } from './HourSelector';
 import { useChartColors } from '../useChartColors';
-import { ChartLine } from 'lucide-react';
 
 interface EnergyFlowProps {
   data: any[];
@@ -34,61 +33,145 @@ export function EnergyFlowChart({ data, hour = 12, onHourChange }: EnergyFlowPro
         <HourSelector hour={hour} onHourChange={onHourChange} />
       </div>
 
-      <div className="flex-1 bg-muted/20 rounded-lg p-4 overflow-auto">
-        <div className="flex flex-col gap-6 h-full relative">
-          {/* Connection lines to create the spider web effect */}
-          <div className="absolute inset-0 pointer-events-none">
-            <svg className="w-full h-full">
-              {/* These SVG paths will be dynamically drawn based on the energy flow */}
-              {currentData.pv > 0 && (
-                <path 
-                  d="M 100,100 L 50%,50%" 
-                  stroke={chartColors.pv} 
-                  strokeWidth="2"
-                  strokeDasharray={currentData.pv > 10 ? "none" : "5,5"}
-                  fill="none"
-                  className="animate-pulse"
-                />
-              )}
-              {/* More dynamic paths will be added */}
-            </svg>
+      <div className="flex-1 bg-muted/20 rounded-lg p-4 relative">
+        {/* SVG connection lines for the entire microgrid */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+          {/* PV to BESS connection */}
+          {currentData.pv > 0 && (
+            <>
+              <path 
+                d="M 25%,25% L 50%,50%" 
+                stroke={chartColors.pv} 
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray={currentData.pv < 10 ? "5,5" : "none"}
+                markerEnd="url(#arrowheadPv)"
+              />
+              <defs>
+                <marker id="arrowheadPv" markerWidth="10" markerHeight="7" 
+                      refX="0" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill={chartColors.pv} />
+                </marker>
+              </defs>
+            </>
+          )}
+          
+          {/* Grid to BESS or Load connection */}
+          {currentData.grid > 0 && (
+            <>
+              <path 
+                d="M 75%,25% L 50%,50%" 
+                stroke={chartColors.grid} 
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray={currentData.grid < 10 ? "5,5" : "none"}
+                markerEnd="url(#arrowheadGrid)"
+              />
+              <defs>
+                <marker id="arrowheadGrid" markerWidth="10" markerHeight="7" 
+                      refX="0" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill={chartColors.grid} />
+                </marker>
+              </defs>
+            </>
+          )}
+          
+          {/* Diesel to BESS connection */}
+          {currentData.diesel > 0 && (
+            <>
+              <path 
+                d="M 25%,75% L 50%,50%" 
+                stroke={chartColors.diesel} 
+                strokeWidth="2"
+                fill="none"
+                markerEnd="url(#arrowheadDiesel)"
+              />
+              <defs>
+                <marker id="arrowheadDiesel" markerWidth="10" markerHeight="7" 
+                      refX="0" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill={chartColors.diesel} />
+                </marker>
+              </defs>
+            </>
+          )}
+          
+          {/* BESS to Load connection (discharge) */}
+          {currentData.discharge > 0 && (
+            <>
+              <path 
+                d="M 50%,50% L 75%,75%" 
+                stroke={chartColors.discharge} 
+                strokeWidth="2"
+                fill="none"
+                markerEnd="url(#arrowheadDischarge)"
+              />
+              <defs>
+                <marker id="arrowheadDischarge" markerWidth="10" markerHeight="7" 
+                      refX="0" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill={chartColors.discharge} />
+                </marker>
+              </defs>
+            </>
+          )}
+        </svg>
+        
+        <div className="grid grid-cols-2 gap-4 h-full">
+          {/* Top Row: PV and Grid */}
+          <div className="flex items-center justify-center">
+            {currentData.pv > 0 && (
+              <EnergySourcesSection 
+                type="pv" 
+                currentData={currentData} 
+                chartColors={chartColors}
+                formatNumber={formatNumber}
+              />
+            )}
           </div>
           
-          {/* Energy sources */}
-          <EnergySourcesSection 
-            currentData={currentData} 
-            chartColors={chartColors} 
-            formatNumber={formatNumber} 
-          />
+          <div className="flex items-center justify-center">
+            {currentData.grid > 0 && (
+              <EnergySourcesSection 
+                type="grid" 
+                currentData={currentData} 
+                chartColors={chartColors}
+                formatNumber={formatNumber}
+              />
+            )}
+          </div>
           
-          {/* BESS in the middle */}
-          <BessSection 
-            currentData={currentData} 
-            chartColors={chartColors} 
-            formatNumber={formatNumber} 
-          />
+          {/* Middle Row: BESS */}
+          <div className="col-span-2 flex items-center justify-center">
+            <BessSection 
+              currentData={currentData} 
+              chartColors={chartColors} 
+              formatNumber={formatNumber} 
+            />
+          </div>
           
-          {/* Load (consumption) */}
-          <LoadSection 
-            currentData={currentData} 
-            chartColors={chartColors} 
-            formatNumber={formatNumber} 
-          />
+          {/* Bottom Row: Diesel and Load */}
+          <div className="flex items-center justify-center">
+            {currentData.diesel > 0 && (
+              <EnergySourcesSection 
+                type="diesel" 
+                currentData={currentData} 
+                chartColors={chartColors}
+                formatNumber={formatNumber}
+              />
+            )}
+          </div>
+          
+          <div className="flex items-center justify-center">
+            <LoadSection 
+              currentData={currentData} 
+              chartColors={chartColors} 
+              formatNumber={formatNumber} 
+            />
+          </div>
         </div>
       </div>
       
       {/* Legend */}
       <EnergyFlowLegend chartColors={chartColors} />
-      
-      {/* Daily profile chart button */}
-      <div className="mt-4 flex justify-center">
-        <button 
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-        >
-          <ChartLine size={16} />
-          <span>Ver perfil completo de 24h</span>
-        </button>
-      </div>
     </div>
   );
 }
