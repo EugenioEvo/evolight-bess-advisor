@@ -33,6 +33,7 @@ export function SimuladorPageContainer() {
     try {
       const result = await runSimulation(values);
       if (result.success && result.results) {
+        // Only access results properties if they exist
         form.setValue('bessPowerKw', result.results.calculatedPowerKw);
         form.setValue('bessCapacityKwh', result.results.calculatedEnergyKwh);
         setActiveTab("analise");

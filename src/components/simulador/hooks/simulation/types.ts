@@ -17,5 +17,5 @@ export type SimulationResults = {
 export type SimulationResponse = {
   success: boolean;
   results?: SimulationResults;
-  error?: Error;
+  error?: Error | string | any;
 };

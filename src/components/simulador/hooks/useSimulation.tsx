@@ -4,7 +4,7 @@ import { useBessSize } from '@/hooks/useBessSize';
 import { useBessSimulation } from '@/hooks/bessSimulation/useBessSimulation';
 import { toast } from "sonner";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
-import { SimulationResults } from "./simulation/types";
+import { SimulationResults, SimulationResponse } from "./simulation/types";
 import { runLegacySimulation } from "./simulation/legacySimulation";
 import { processBessSimulationResult } from "./simulation/bessSimulation";
 
@@ -24,7 +24,7 @@ export function useSimulation() {
    * @param values The form values from the simulator interface
    * @returns Object containing success status and results or error
    */
-  const runSimulation = async (values: SimuladorFormValues) => {
+  const runSimulation = async (values: SimuladorFormValues): Promise<SimulationResponse> => {
     try {
       setIsSimulating(true);
       setSimulationError(null);
@@ -44,7 +44,6 @@ export function useSimulation() {
           setSimulationResults(legacyResult.results);
         } else {
           setSimulationError(legacyResult.error?.message || "Erro na simulação");
-          return legacyResult;
         }
         
         return legacyResult;

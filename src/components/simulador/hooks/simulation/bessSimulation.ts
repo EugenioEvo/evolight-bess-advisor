@@ -1,62 +1,66 @@
 
-import { toast } from "sonner";
-import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { BessSimulationResult } from "@/hooks/bessSimulation/types";
-import { SimulationResults, SimulationResponse } from "./types";
+import { SimuladorFormValues } from "@/schemas/simuladorSchema";
+import { SimulationResponse } from "./types";
+import { MODULE_POWER_KW, MODULE_ENERGY_KWH, calculateRequiredModules } from "@/config/bessModuleConfig";
 
 /**
- * Process the results of the BESS simulation to generate financial metrics and simulation results
+ * Processes the BESS simulation results into the format expected by the application
  */
 export function processBessSimulationResult(
-  bessResult: BessSimulationResult,
-  values: SimuladorFormValues
+  bessResult: BessSimulationResult, 
+  formValues: SimuladorFormValues
 ): SimulationResponse {
+  if (!bessResult.isSuccess || !bessResult) {
+    return {
+      success: false,
+      error: bessResult.error || "Erro na simulação BESS",
+    };
+  }
+
   try {
-    const calculatedPowerKw = bessResult.bessPowerKw;
-    const calculatedEnergyKwh = bessResult.bessEnergyKwh;
-    const annualSavings = bessResult.kpiAnnual;
+    // Calculate required number of modules based on both power and energy requirements
+    const bessUnitsRequired = calculateRequiredModules(
+      bessResult.bessPowerKw,
+      bessResult.bessEnergyKwh
+    );
     
-    // Calculate additional financial metrics
+    // Calculate actual power and energy based on indivisible modules
+    const actualPowerKw = bessUnitsRequired * MODULE_POWER_KW;
+    const actualEnergyKwh = bessUnitsRequired * MODULE_ENERGY_KWH;
+    
+    // Cálculo do investimento total considerando unidades BESS indivisíveis
     let totalInvestment = 0;
-    if (values.capexCost > 0) {
-      // If provided a manual total cost, use that value
-      totalInvestment = values.capexCost;
-    } else if (values.bessUnitCost > 0) {
-      // If provided a cost per BESS unit, calculate based on number of units
-      totalInvestment = bessResult.modules * values.bessUnitCost;
+    if (formValues.capexCost > 0) {
+      totalInvestment = formValues.capexCost;
+    } else if (formValues.bessUnitCost > 0) {
+      totalInvestment = bessUnitsRequired * formValues.bessUnitCost;
     } else {
-      // Otherwise, use cost per kWh based on actual energy capacity
-      totalInvestment = calculatedEnergyKwh * (values.bessInstallationCost || 1500);
+      totalInvestment = actualEnergyKwh * (formValues.bessInstallationCost || 1500);
     }
     
-    // Calculate payback and ROI
+    // Cálculo do payback se tivermos economia anual
+    const annualSavings = bessResult.kpiAnnual || totalInvestment / 5;
     const paybackYears = annualSavings > 0 ? totalInvestment / annualSavings : 0;
-    const roi = (annualSavings * values.horizonYears) / totalInvestment * 100;
-    const isViable = paybackYears > 0 && paybackYears < values.horizonYears;
     
-    // Build simulation results
-    const results: SimulationResults = {
-      calculatedPowerKw: calculatedPowerKw,
-      calculatedEnergyKwh: calculatedEnergyKwh,
-      paybackYears,
-      annualSavings,
-      roi,
-      isViable,
-      dispatch24h: bessResult.dispatch24h
+    return {
+      success: true,
+      results: {
+        calculatedPowerKw: bessResult.bessPowerKw,
+        calculatedEnergyKwh: bessResult.bessEnergyKwh,
+        paybackYears,
+        annualSavings,
+        roi: (annualSavings * formValues.horizonYears) / totalInvestment * 100,
+        npv: 0, // Simplified financial calculation
+        isViable: paybackYears > 0 && paybackYears < formValues.horizonYears,
+        dispatch24h: bessResult.dispatch24h,
+      }
     };
-    
-    console.log("Final simulation results (v2):", results);
-    
-    toast.success("BESS dimensionado com sucesso!", {
-      description: `Potência: ${calculatedPowerKw.toFixed(2)} kW, Capacidade: ${calculatedEnergyKwh.toFixed(2)} kWh`
-    });
-    
-    return { success: true, results };
   } catch (error) {
     console.error("Error processing BESS simulation result:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error : new Error("Error processing BESS simulation result") 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Erro ao processar resultado",
     };
   }
 }
