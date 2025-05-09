@@ -41,7 +41,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
   const bessCapacity = typeof formValues.bessCapacityKwh === 'number' && formValues.bessCapacityKwh > 0
     ? formValues.bessCapacityKwh
     : typeof results.calculatedEnergyKwh === 'number' && results.calculatedEnergyKwh > 0
-      ? results.calculateEnergyKwh
+      ? results.calculatedEnergyKwh
       : 215; // Default fallback value if both sources are invalid
   
   // Generate power data with validated values
