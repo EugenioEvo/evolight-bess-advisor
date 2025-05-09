@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Area, ComposedChart, CartesianGrid, Line, Tooltip, XAxis, YAxis, Legend, ResponsiveContainer } from 'recharts';
 import { useChartColors } from '../charts/dispatch/useChartColors';
-import { EnergyFlowChart } from '../charts/dispatch/EnergyFlowChart';
+import { EnergyFlowChart } from '../charts/dispatch/flow';
 import { Button } from '@/components/ui/button';
 import { ChartLine, ArrowRight } from 'lucide-react';
 

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { EnergyDispatchChart } from '../EnergyDispatchChart';
-import { EnergyFlowChart } from './EnergyFlowChart';
+import { EnergyFlowChart } from './flow';
 import { DispatchPoint } from '../EnergyDispatchChartTypes';
 import { Button } from '@/components/ui/button';
 import { ChartLine, ArrowRight } from 'lucide-react';
