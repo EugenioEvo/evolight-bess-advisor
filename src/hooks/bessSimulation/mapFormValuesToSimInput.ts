@@ -36,10 +36,10 @@ export function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
   }
   
   // Calculate chargeEff and dischargeEff based on roundtrip efficiency
-  // Default roundtrip efficiency is 0.913 = 0.956 * 0.956
-  const roundEff = formValues.bessRoundTripEff || 0.913;
-  // Individual efficiency is the square root of roundtrip efficiency
-  const singleEff = Math.sqrt(roundEff);
+  // Using individual efficiencies explicitly defined in the form
+  const chargeEff = formValues.chargeEff ? formValues.chargeEff / 100 : 0.95;
+  const dischargeEff = formValues.dischargeEff ? formValues.dischargeEff / 100 : 0.95;
+  const roundEff = chargeEff * dischargeEff;
   
   return {
     // Load and PV profiles
@@ -51,32 +51,32 @@ export function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
     peakEnd: formValues.peakEndHour || 21,
     
     // Tariff data
-    tePeak: formValues.tariffEnergyPeakRate || 0.8,
-    tusdPeak: formValues.tariffDemandPeakRate || 0.2,
-    teOff: formValues.tariffEnergyOffpeakRate || 0.4,
-    tusdOff: formValues.tariffDemandOffpeakRate || 0.1,
-    tusdDemand: formValues.tariffDemandChargeRate || 50,
+    tePeak: formValues.tePeak || 0.8,
+    tusdPeak: formValues.tusdPeakKwh || 0.2,
+    teOff: formValues.teOffpeak || 0.4,
+    tusdOff: formValues.tusdOffpeakKwh || 0.1,
+    tusdDemand: formValues.tusdPeakKw || 50,
     
     // Control strategies
     usePS: formValues.usePeakShaving || false,
     psMode: formValues.peakShavingMethod === 'percentage' ? 'percent' : 
-            formValues.peakShavingMethod === 'kw' ? 'kw' : 'target',
+            formValues.peakShavingMethod === 'reduction' ? 'kw' : 'target',
     psValue: formValues.peakShavingMethod === 'percentage' ? formValues.peakShavingPercentage || 30 : 
-             formValues.peakShavingMethod === 'kw' ? formValues.peakShavingTarget || 45 : 
+             formValues.peakShavingMethod === 'reduction' ? formValues.peakShavingTarget || 45 : 
              formValues.peakShavingTarget || 100,
     useARB: formValues.useArbitrage || false,
     
     // BESS parameters - using individual efficiencies for charge and discharge
     modulePower: 108,
     moduleEnergy: 215,
-    chargeEff: singleEff,
-    dischargeEff: singleEff,
-    roundEff: roundEff,
+    chargeEff,
+    dischargeEff,
+    roundEff,
     maxSoC: 1.0,  // 100%
     minSoC: (100 - (formValues.bessMaxDod || 85)) / 100,  // Convert DoD to min SoC
     chargeWindow: [1, 5],
     
-    // Incluindo a modalidade tarifária que estava faltando
-    tariffModality: formValues.tariffModality || "green"
+    // Including tariff modality
+    tariffModality: formValues.modalityA || "green"
   };
 }
