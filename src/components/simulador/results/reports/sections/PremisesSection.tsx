@@ -48,6 +48,14 @@ export function PremisesSection({ formValues }: PremisesSectionProps) {
                 <TableCell>{formValues.maxOffpeakDemandKw}</TableCell>
               </TableRow>
               <TableRow>
+                <TableCell>Demanda Mínima na Ponta (kW)</TableCell>
+                <TableCell>{formValues.minPeakDemandKw}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Demanda Mínima Fora Ponta (kW)</TableCell>
+                <TableCell>{formValues.minOffpeakDemandKw}</TableCell>
+              </TableRow>
+              <TableRow>
                 <TableCell>Consumo Mensal na Ponta (kWh)</TableCell>
                 <TableCell>{formValues.avgMonthlyPeakConsumptionKwh}</TableCell>
               </TableRow>

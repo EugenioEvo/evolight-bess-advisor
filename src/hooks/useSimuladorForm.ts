@@ -29,6 +29,8 @@ export function useSimuladorForm() {
       avgOffpeakDemandKw: 80,
       maxPeakDemandKw: 150,
       maxOffpeakDemandKw: 120,
+      minPeakDemandKw: 50,    // Default minimum peak demand
+      minOffpeakDemandKw: 30, // Default minimum off-peak demand
       avgDailyPeakConsumptionKwh: 400,
       avgDailyOffpeakConsumptionKwh: 1600,
       avgMonthlyPeakConsumptionKwh: 12000,

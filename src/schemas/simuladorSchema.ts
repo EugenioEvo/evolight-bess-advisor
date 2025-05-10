@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const simuladorFormSchema = z.object({
@@ -20,6 +19,12 @@ export const simuladorFormSchema = z.object({
     .default(0),
   maxOffpeakDemandKw: z.coerce.number()
     .min(0, { message: "Demanda máxima fora de ponta deve ser maior ou igual a 0" })
+    .default(0),
+  minPeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda mínima na ponta deve ser maior ou igual a 0" })
+    .default(0),
+  minOffpeakDemandKw: z.coerce.number()
+    .min(0, { message: "Demanda mínima fora de ponta deve ser maior ou igual a 0" })
     .default(0),
   // Consumo
   avgDailyPeakConsumptionKwh: z.coerce.number()

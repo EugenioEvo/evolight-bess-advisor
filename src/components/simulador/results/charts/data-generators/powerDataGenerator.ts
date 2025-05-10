@@ -14,6 +14,10 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     ? formValues.maxPeakDemandKw : peakDemand * 1.5;
   const maxOffpeakDemand = typeof formValues.maxOffpeakDemandKw === 'number' && formValues.maxOffpeakDemandKw > 0
     ? formValues.maxOffpeakDemandKw : offpeakDemand * 1.5;
+  const minPeakDemand = typeof formValues.minPeakDemandKw === 'number' && formValues.minPeakDemandKw >= 0
+    ? formValues.minPeakDemandKw : peakDemand * 0.5;
+  const minOffpeakDemand = typeof formValues.minOffpeakDemandKw === 'number' && formValues.minOffpeakDemandKw >= 0
+    ? formValues.minOffpeakDemandKw : offpeakDemand * 0.5;
     
   // Ensure PV power is always a valid number
   const pvPower = formValues.hasPv && typeof formValues.pvPowerKwp === 'number' && formValues.pvPowerKwp > 0
@@ -49,16 +53,18 @@ export function generatePowerData(formValues: SimuladorFormValues, batteryCap: n
     } else {
       // Use o perfil sintético calculado
       if (isPeakHour) {
-        // Peak hours - use peak demand values
-        loadKw = maxPeakDemand;
+        // Use a value between min and max peak demand based on hour within peak period
+        const peakPosition = (hour - peakStartHour) / (peakEndHour - peakStartHour + 1);
+        const peakShape = Math.sin(peakPosition * Math.PI); // Creates a bell curve within peak hours
+        loadKw = minPeakDemand + (maxPeakDemand - minPeakDemand) * peakShape;
       } else if (hour >= 7 && hour < peakStartHour) {
-        // Daytime hours - use a value between offpeak and peak
+        // Daytime hours - use a value between min and average offpeak 
         const dayFactor = 0.7 + 0.3 * Math.sin((hour - 7) / (peakStartHour - 7) * Math.PI);
-        loadKw = offpeakDemand + (peakDemand - offpeakDemand) * dayFactor;
+        loadKw = minOffpeakDemand + (offpeakDemand - minOffpeakDemand) * dayFactor;
       } else {
-        // Night hours - use offpeak demand with some variation
-        const nightFactor = 0.6 + 0.4 * Math.sin(hour / 24 * Math.PI);
-        loadKw = offpeakDemand * nightFactor;
+        // Night hours - closer to minimum offpeak demand
+        const nightFactor = 0.2 + 0.5 * Math.sin(hour / 24 * Math.PI);
+        loadKw = minOffpeakDemand + (offpeakDemand - minOffpeakDemand) * nightFactor;
       }
     }
     

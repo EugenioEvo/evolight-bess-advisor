@@ -49,6 +49,10 @@ export function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
     peakStart: formValues.peakStartHour || 18,
     peakEnd: formValues.peakEndHour || 21,
     
+    // Min demand settings
+    minPeakDemand: formValues.minPeakDemandKw || 0,
+    minOffpeakDemand: formValues.minOffpeakDemandKw || 0,
+    
     // Tariff data
     tePeak: formValues.tePeak || 0.8,
     tusdPeak: formValues.tusdPeakKwh || 0.2,
