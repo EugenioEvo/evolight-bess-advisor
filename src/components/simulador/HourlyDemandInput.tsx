@@ -4,17 +4,20 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
-import { Card, CardContent } from '@/components/ui/card';
 
 interface HourlyDemandInputProps {
-  form: UseFormReturn<SimuladorFormValues>;
+  form?: UseFormReturn<SimuladorFormValues>;
+  values?: number[];
+  onChange?: (values: number[]) => void;
+  className?: string;
 }
 
-export function HourlyDemandInput({ form }: HourlyDemandInputProps) {
-  return (
-    <Card className="border border-gray-200">
-      <CardContent className="pt-4">
-        <div className="grid grid-cols-6 gap-2">
+export function HourlyDemandInput({ form, values, onChange, className }: HourlyDemandInputProps) {
+  // If form is provided, use it as before
+  if (form) {
+    return (
+      <div className={`border border-gray-200 rounded-lg ${className || ''}`}>
+        <div className="p-4 grid grid-cols-6 gap-2">
           {Array.from({ length: 24 }, (_, i) => (
             <FormField
               key={`hour-${i}`}
@@ -42,7 +45,34 @@ export function HourlyDemandInput({ form }: HourlyDemandInputProps) {
             />
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    );
+  }
+
+  // If values and onChange are provided, use them directly
+  return (
+    <div className={`border border-gray-200 rounded-lg ${className || ''}`}>
+      <div className="p-4 grid grid-cols-6 gap-2">
+        {Array.from({ length: 24 }, (_, i) => (
+          <div key={`hour-${i}`} className="space-y-1">
+            <label htmlFor={`hour-${i}`} className="text-xs block">{`${i}:00h`}</label>
+            <Input 
+              id={`hour-${i}`}
+              type="number" 
+              step="0.01" 
+              className="h-8 text-sm" 
+              value={values?.[i] || 0}
+              onChange={(e) => {
+                if (onChange) {
+                  const newValues = [...(values || Array(24).fill(0))];
+                  newValues[i] = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                  onChange(newValues);
+                }
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -10,7 +10,7 @@ import ProfilePage from './pages/ProfilePage';
 import NotFound from './pages/NotFound';
 import DieselBessPage from './pages/DieselBessPage';
 import WizardPage from './pages/WizardPage';
-import { AuthGuard } from './components/AuthGuard';
+import AuthGuard from './components/AuthGuard';
 import { Toaster } from './components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster as SonnerToaster } from 'sonner';

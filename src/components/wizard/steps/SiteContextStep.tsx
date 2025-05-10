@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Building, Industry, Home, PuzzleIcon, Sun, Zap } from 'lucide-react';
+import { Building, Factory, Home, PuzzleIcon, Sun, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -30,7 +30,7 @@ export function SiteContextStep() {
   const getIconForSiteType = (type: string) => {
     switch (type) {
       case 'industrial':
-        return <Industry className="h-8 w-8" />;
+        return <Factory className="h-8 w-8" />;
       case 'commercial':
         return <Building className="h-8 w-8" />;
       case 'rural':

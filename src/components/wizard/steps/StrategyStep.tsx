@@ -17,7 +17,7 @@ import {
   ZapOff, 
   Check, 
   X, 
-  Scales 
+  Scale 
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 

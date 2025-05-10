@@ -108,8 +108,10 @@ export function ProfileStep() {
             {profileEntryMethod === 'simple' && (
               <ConsumptionPatternSelector
                 onSelect={(pattern) => {
-                  setValue('profileType', pattern);
-                  setValue('hourlyDemandKw', generatePattern(pattern));
+                  // Ensure pattern is one of the allowed types
+                  const validPattern = pattern as "daytime" | "nighttime" | "constant";
+                  setValue('profileType', validPattern);
+                  setValue('hourlyDemandKw', generatePattern(validPattern));
                 }}
               />
             )}
@@ -236,21 +238,21 @@ export function ProfileStep() {
 }
 
 // Helper function to generate patterns
-function generatePattern(pattern: string): number[] {
+function generatePattern(pattern: "daytime" | "nighttime" | "constant"): number[] {
   switch (pattern) {
-    case 'daytime': // Higher during the day
+    case "daytime": // Higher during the day
       return [
         30, 25, 20, 20, 25, 30, 45, 60, 
         85, 100, 110, 115, 120, 115, 100, 
         85, 70, 60, 50, 45, 40, 35, 35, 30
       ];
-    case 'nighttime': // Higher during the evening
+    case "nighttime": // Higher during the evening
       return [
         45, 35, 30, 25, 25, 30, 45, 60, 
         70, 80, 85, 90, 85, 80, 70, 85, 
         100, 110, 120, 100, 90, 80, 70, 60
       ];
-    case 'constant': // Relatively flat
+    case "constant": // Relatively flat
       return Array(24).fill(80);
     default:
       return Array(24).fill(0);
