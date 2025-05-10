@@ -9,6 +9,7 @@ export interface DispatchPoint {
   grid?: number;       // kW comprados (>=0) - opcional
   soc: number;         // 0-100 %
   dieselRef: number;   // Changed from optional to required
+  negDis?: number;     // Negative discharge value for chart stacking
 }
 
 export interface EnergyDispatchChartProps {
