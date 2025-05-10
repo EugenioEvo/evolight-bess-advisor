@@ -1,75 +1,82 @@
 
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
-import { BessSimulationInput } from "./types";
 
 /**
- * Maps form values from the simulator to the input format required by the BESS simulation
+ * Maps form values to the simulation input format expected by the 'simulate-bess' edge function
  */
-export function mapFormValuesToSimInput(formValues: SimuladorFormValues): BessSimulationInput {
-  // Generate load profile
-  let loadProfile: number[];
-  if (formValues.loadEntryMethod === "hourly" && Array.isArray(formValues.hourlyDemandKw)) {
-    loadProfile = formValues.hourlyDemandKw;
-  } else {
-    loadProfile = Array(24).fill(0).map((_, i) => {
-      if (i >= (formValues.peakStartHour || 18) && i <= (formValues.peakEndHour || 21)) {
-        return formValues.maxPeakDemandKw || formValues.avgPeakDemandKw || 100;
+export function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
+  // Generate 24-hour load profile
+  const load = Array.from({ length: 24 }).map((_, hour) => {
+    if (formValues.loadEntryMethod === "hourly" && 
+        Array.isArray(formValues.hourlyDemandKw) && 
+        formValues.hourlyDemandKw.length > hour) {
+      return formValues.hourlyDemandKw[hour] || 0;
+    }
+    
+    // Synthetic profile
+    const isPeakHour = hour >= (formValues.peakStartHour || 18) && hour <= (formValues.peakEndHour || 21);
+    
+    if (isPeakHour) {
+      return formValues.maxPeakDemandKw || 150;
+    } else {
+      return formValues.maxOffpeakDemandKw || 100;
+    }
+  });
+  
+  // Generate PV profile if applicable
+  let pv;
+  if (formValues.hasPv && formValues.pvPowerKwp) {
+    pv = Array.from({ length: 24 }).map((_, hour) => {
+      if (hour >= 6 && hour <= 18) {
+        // Simple bell curve for solar production
+        return formValues.pvPowerKwp! * Math.sin((hour - 6) / 12 * Math.PI);
       }
-      if (i >= 8 && i <= 17) {
-        return formValues.avgOffpeakDemandKw || 80;
-      }
-      return (formValues.avgOffpeakDemandKw || 80) * 0.5;
+      return 0;
     });
   }
-
-  // Generate PV profile if enabled
-  let pvProfile: number[] = Array(24).fill(0);
-  if (formValues.hasPv && formValues.pvPowerKwp > 0) {
-    // Simple bell curve for PV generation (peak at noon)
-    const pvFactors = [0, 0, 0, 0, 0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0, 0.9, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0, 0, 0, 0];
-    pvProfile = pvFactors.map(v => v * formValues.pvPowerKwp);
-  }
-
-  // Map peak shaving mode
-  let psMode: "percent" | "kw" | "target" = "percent";
-  if (formValues.peakShavingMethod === "target") {
-    psMode = "target";
-  } else if (formValues.peakShavingMethod === "reduction") {
-    psMode = "kw";
-  }
-
-  // Map peak shaving value
-  let psValue = formValues.peakShavingPercentage || 30;
-  if (formValues.peakShavingMethod === "target" || formValues.peakShavingMethod === "reduction") {
-    psValue = formValues.peakShavingTarget || 0;
-  }
-
-  // Calculate roundtrip efficiency from charge and discharge efficiencies
-  const chargeEff = (formValues.chargeEff || 95) / 100;
-  const dischargeEff = (formValues.dischargeEff || 95) / 100;
-  const roundEff = chargeEff * dischargeEff;
-
+  
+  // Calculate chargeEff and dischargeEff based on roundtrip efficiency
+  // Default roundtrip efficiency is 0.913 = 0.956 * 0.956
+  const roundEff = formValues.bessRoundTripEff || 0.913;
+  // Individual efficiency is the square root of roundtrip efficiency
+  const singleEff = Math.sqrt(roundEff);
+  
   return {
-    load: loadProfile,
-    pv: formValues.hasPv ? pvProfile : undefined,
+    // Load and PV profiles
+    load,
+    pv,
+    
+    // Peak window settings
     peakStart: formValues.peakStartHour || 18,
     peakEnd: formValues.peakEndHour || 21,
-    tePeak: formValues.tePeak || 0.80,
-    tusdPeak: formValues.tusdPeakKwh || 0.20,
-    teOff: formValues.teOffpeak || 0.40,
-    tusdOff: formValues.tusdOffpeakKwh || 0.10,
-    tusdDemand: formValues.tusdPeakKw || 50.0,
-    usePS: formValues.usePeakShaving,
-    psMode,
-    psValue,
-    useARB: formValues.useArbitrage,
+    
+    // Tariff data
+    tePeak: formValues.tariffEnergyPeakRate || 0.8,
+    tusdPeak: formValues.tariffDemandPeakRate || 0.2,
+    teOff: formValues.tariffEnergyOffpeakRate || 0.4,
+    tusdOff: formValues.tariffDemandOffpeakRate || 0.1,
+    tusdDemand: formValues.tariffDemandChargeRate || 50,
+    
+    // Control strategies
+    usePS: formValues.usePeakShaving || false,
+    psMode: formValues.peakShavingMethod === 'percentage' ? 'percent' : 
+            formValues.peakShavingMethod === 'kw' ? 'kw' : 'target',
+    psValue: formValues.peakShavingMethod === 'percentage' ? formValues.peakShavingPercentage || 30 : 
+             formValues.peakShavingMethod === 'kw' ? formValues.peakShavingTarget || 45 : 
+             formValues.peakShavingTarget || 100,
+    useARB: formValues.useArbitrage || false,
+    
+    // BESS parameters - using individual efficiencies for charge and discharge
     modulePower: 108,
     moduleEnergy: 215,
-    chargeEff,
-    dischargeEff,
-    roundEff,
-    maxSoC: 1.0,
-    minSoC: 1.0 - (formValues.bessMaxDod || 85) / 100,
-    chargeWindow: [1, 5] // Default charging window for arbitrage (early morning)
+    chargeEff: singleEff,
+    dischargeEff: singleEff,
+    roundEff: roundEff,
+    maxSoC: 1.0,  // 100%
+    minSoC: (100 - (formValues.bessMaxDod || 85)) / 100,  // Convert DoD to min SoC
+    chargeWindow: [1, 5],
+    
+    // Incluindo a modalidade tarifária que estava faltando
+    tariffModality: formValues.tariffModality || "green"
   };
 }

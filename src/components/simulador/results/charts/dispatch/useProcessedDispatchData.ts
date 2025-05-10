@@ -29,7 +29,8 @@ export function useProcessedDispatchData(data: DispatchPoint[] | BessDispatchPoi
         pv: Number(d.pv ?? row.pv),
         
         /* Essential for displaying discharge as negative area */
-        negDis: -Math.abs(discharge), // Always negative for stacking
+        // Certifica que negDis é sempre um valor negativo para empilhamento correto
+        negDis: discharge > 0 ? -discharge : 0, // Always negative for stacking
         discharge,                    // Keep positive for tooltip
         
         soc: Number(d.soc ?? row.soc),

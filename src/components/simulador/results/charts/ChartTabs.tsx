@@ -31,7 +31,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
                               Array.isArray(results.dispatch24h) && 
                               results.dispatch24h.length > 0;
   
-  // Ensure we have valid values from form or results - no longer limiting to max values
+  // Ensure we have valid values from form or results - removed limitation to max values
   const bessPower = typeof formValues.bessPowerKw === 'number' && formValues.bessPowerKw > 0 
     ? formValues.bessPowerKw 
     : typeof results.calculatedPowerKw === 'number' && results.calculatedPowerKw > 0
@@ -44,7 +44,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
       ? results.calculatedEnergyKwh
       : 215; // Default fallback value if both sources are invalid
   
-  // Generate power data with validated values
+  // Generate power data with validated values - removed any capacity constraints
   const powerData = generatePowerData(
     formValues, 
     bessCapacity, 

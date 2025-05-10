@@ -48,6 +48,8 @@ export const ChartAreas: React.FC<ChartAreasProps> = ({ chartColors }) => {
         stroke="none"
         name="BESS (descarga)"
         isAnimationActive={true}
+        // Asseguramos que o valor negativo seja renderizado corretamente
+        fillOpacity={1}
       />
       
       <Area 
