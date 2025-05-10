@@ -38,6 +38,12 @@ export interface SimulationInput {
   };
   min_peak_demand_kw?: number;       // Demanda mínima na ponta
   min_offpeak_demand_kw?: number;    // Demanda mínima fora de ponta
+  diesel_params?: {                  // Parameters for diesel replacement scenario
+    dieselCostPerLiter: number;       // R$/litro
+    dieselSpecificConsumption: number; // liters/kWh
+    dieselCO2EmissionFactor: number;   // kgCO2/liter
+    dieselOperationalDays?: number;   // days per year, default 365
+  };
 }
 
 export interface StrategyRequirements {
@@ -63,4 +69,10 @@ export interface SimulationResults {
   bessEnergyKwh: number;
   annualSavingsR$: number;
   chartData: ChartDataPoint[];
+  // KPIs for diesel replacement scenario
+  dieselConsumptionAvoidedAnnual_liters?: number;
+  dieselCostAvoidedAnnual_R$?: number;
+  dieselCO2EmissionsAvoidedAnnual_kg?: number;
+  bessOpCostForDieselReplacementAnnual_R$?: number;
+  netSavingsDieselReplacementAnnual_R$?: number;
 }

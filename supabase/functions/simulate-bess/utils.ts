@@ -30,3 +30,23 @@ export function calculateModules(
   const byEnergy = Math.ceil(energyKwh / moduleEnergyKwh);
   return Math.max(byPower, byEnergy);
 }
+
+/**
+ * Calculate diesel consumption and emissions
+ */
+export function calculateDieselMetrics(
+  energyKwh: number,
+  specificConsumption: number, // liters/kWh
+  costPerLiter: number, // R$/liter
+  co2Factor: number // kgCO2/liter
+) {
+  const fuelLiters = energyKwh * specificConsumption;
+  const cost = fuelLiters * costPerLiter;
+  const co2Emissions = fuelLiters * co2Factor;
+  
+  return {
+    fuelLiters,
+    cost,
+    co2Emissions
+  };
+}

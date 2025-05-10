@@ -38,31 +38,54 @@ export function generateDispatchData(
     }
   }
   
+  // Determine if we're in a diesel replacement scenario
+  const isDieselReplacement = !!input.diesel_params;
+  
   for (let hour = 0; hour < 24; hour++) {
     const load = load_profile[hour];
     const pv = pv_profile[hour];
     let charge = 0;
     let discharge = 0;
     let diesel = 0;
-    const dieselRef = 0; // Not using diesel in this simulation
+    
+    // For diesel replacement scenario, the reference diesel is the load during peak hours
+    let dieselRef = 0;
+    if (isDieselReplacement && hour >= peak_start && hour <= peak_end) {
+      dieselRef = load;
+    }
     
     // Peak shaving: discharge during peak hours
     const isPeakHour = hour >= peak_start && hour <= peak_end;
     
-    if (isPeakHour && peak_shaving_required) {
-      // Apply minimum peak demand if specified
-      const minPeakDemand = min_peak_demand_kw || 0;
-      const effectiveTarget = Math.max(targetLoad, minPeakDemand);
-      
-      // Calculate discharge amount
-      if (load > effectiveTarget) {
-        discharge = Math.min(load - effectiveTarget, bessPowerKw);
+    if (isPeakHour) {
+      if (isDieselReplacement) {
+        // In diesel replacement scenario, try to cover all peak load with BESS
+        discharge = Math.min(load, bessPowerKw);
+        
+        // If there's still load after BESS discharge, use diesel
+        if (discharge < load) {
+          diesel = load - discharge;
+        }
+        
+        // Limit discharge based on available energy
+        const availableEnergy = (soc / 100) * bessEnergyKwh - (bessEnergyKwh * min_soc);
+        discharge = Math.min(discharge, availableEnergy * discharge_eff);
+      } 
+      else if (peak_shaving_required) {
+        // Apply minimum peak demand if specified
+        const minPeakDemand = min_peak_demand_kw || 0;
+        const effectiveTarget = Math.max(targetLoad, minPeakDemand);
+        
+        // Calculate discharge amount
+        if (load > effectiveTarget) {
+          discharge = Math.min(load - effectiveTarget, bessPowerKw);
+        }
       }
     }
     
     // Charging logic: charge during early morning hours (0-5) for next day
     const isChargeHour = hour >= 0 && hour <= 5;
-    if (isChargeHour && sizing.arbitrage_required) {
+    if (isChargeHour && (sizing.arbitrage_required || isDieselReplacement)) {
       const socPct = soc / 100;
       const roomLeft = max_soc - socPct;
       
@@ -80,10 +103,10 @@ export function generateDispatchData(
     let grid = 0;
     if (grid_zero) {
       // Grid-zero operation tries to minimize grid consumption
-      grid = Math.max(0, load + charge - discharge - pv);
+      grid = Math.max(0, load + charge - discharge - pv - diesel);
     } else {
       // Normal operation
-      grid = Math.max(0, load + charge - discharge - pv);
+      grid = Math.max(0, load + charge - discharge - pv - diesel);
       
       // Apply minimum offpeak demand if applicable and not in peak hours
       if (!isPeakHour && min_offpeak_demand_kw) {

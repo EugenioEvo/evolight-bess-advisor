@@ -1,3 +1,4 @@
+
 /*
   inData = { profile:[kW…24], params:{ ... } }
   out    = { chartData:[{hour,…}], kpi:{dieselSavedKWh, dieselSavedLiters, gridKWh, costBaseline, costReal, economy} }
@@ -131,6 +132,11 @@ export function processSimulationResults(simulationResult: {
     dieselRef?: number;
   }>;
   kpiAnnual: number;
+  dieselConsumptionAvoidedAnnual_liters?: number;
+  dieselCostAvoidedAnnual_R$?: number;
+  dieselCO2EmissionsAvoidedAnnual_kg?: number;
+  bessOpCostForDieselReplacementAnnual_R$?: number;
+  netSavingsDieselReplacementAnnual_R$?: number;
 }, params: {
   dieselCost: number;
   dieselYield: number;
@@ -144,7 +150,9 @@ export function processSimulationResults(simulationResult: {
         dieselSavedLiters: 0,
         costBaseline: 0,
         costReal: 0,
-        economy: 0
+        economy: 0,
+        co2Reduction: 0,
+        bessOpCost: 0
       }
     };
   }
@@ -170,6 +178,10 @@ export function processSimulationResults(simulationResult: {
   // Calculate economy
   const economy = costBaseline - costReal;
   
+  // Add CO2 reduction and BESS operational cost metrics if available from simulation
+  const co2Reduction = simulationResult.dieselCO2EmissionsAvoidedAnnual_kg || 0;
+  const bessOpCost = simulationResult.bessOpCostForDieselReplacementAnnual_R$ || 0;
+  
   return {
     chartData: dispatch,
     kpi: {
@@ -177,7 +189,9 @@ export function processSimulationResults(simulationResult: {
       dieselSavedLiters,
       costBaseline,
       costReal,
-      economy: simulationResult.kpiAnnual || economy
+      economy: simulationResult.netSavingsDieselReplacementAnnual_R$ || economy,
+      co2Reduction,
+      bessOpCost
     }
   };
 }

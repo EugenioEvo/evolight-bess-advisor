@@ -3,6 +3,7 @@
  * Financial calculations for BESS simulation
  */
 import { SimulationInput } from "./types.ts";
+import { sum } from "./utils.ts";
 
 /**
  * Calculate annual savings based on simulation results
@@ -40,4 +41,61 @@ export function calculateAnnualSavings(input: SimulationInput, peakShavingPower:
   }
   
   return annualSavings;
+}
+
+/**
+ * Calculate diesel replacement savings
+ */
+export function calculateDieselReplacementSavings(
+  input: SimulationInput,
+  dailyDieselAvoided: number // kWh per day
+): {
+  consumptionAvoided: number; // liters per year
+  costAvoided: number; // R$ per year
+  co2Avoided: number; // kg per year
+  bessOpCost: number; // R$ per year
+  netSavings: number; // R$ per year
+} {
+  const dieselParams = input.diesel_params;
+  if (!dieselParams) {
+    return {
+      consumptionAvoided: 0,
+      costAvoided: 0,
+      co2Avoided: 0,
+      bessOpCost: 0,
+      netSavings: 0
+    };
+  }
+  
+  const {
+    dieselCostPerLiter,
+    dieselSpecificConsumption, // liters/kWh
+    dieselCO2EmissionFactor, // kgCO2/liter
+    dieselOperationalDays = 365
+  } = dieselParams;
+  
+  // Calculate annual values
+  const annualDieselEnergyAvoided = dailyDieselAvoided * dieselOperationalDays; // kWh/year
+  const annualConsumptionAvoided = annualDieselEnergyAvoided * dieselSpecificConsumption; // liters/year
+  const annualCostAvoided = annualConsumptionAvoided * dieselCostPerLiter; // R$/year
+  const annualCO2Avoided = annualConsumptionAvoided * dieselCO2EmissionFactor; // kgCO2/year
+  
+  // Estimate BESS operational costs for diesel replacement (simplified)
+  // Assuming grid electricity cost for charging and maintenance
+  const { te_off, tusd_off } = input.tariff;
+  const gridCostOffpeak = te_off + tusd_off; // R$/kWh
+  const chargingCost = annualDieselEnergyAvoided * gridCostOffpeak; // R$/year
+  const maintenanceCost = annualDieselEnergyAvoided * 0.01; // R$/year (1% of energy value)
+  const bessOpCost = chargingCost + maintenanceCost; // R$/year
+  
+  // Calculate net savings
+  const netSavings = annualCostAvoided - bessOpCost; // R$/year
+  
+  return {
+    consumptionAvoided: annualConsumptionAvoided,
+    costAvoided: annualCostAvoided,
+    co2Avoided: annualCO2Avoided,
+    bessOpCost,
+    netSavings
+  };
 }
