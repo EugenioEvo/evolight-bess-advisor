@@ -15,7 +15,7 @@ export function generateDispatchData(
   const { load_profile, tariff, sizing, tech, min_peak_demand_kw, min_offpeak_demand_kw } = input;
   const pv_profile = input.pv_profile || Array(24).fill(0);
   const { peak_start, peak_end } = tariff;
-  const { grid_zero, peak_shaving_required, ps_mode, ps_value } = sizing;
+  const { grid_zero, peak_shaving_required, ps_mode, ps_value, arbitrage_required } = sizing;
   const { max_soc, min_soc, charge_eff, discharge_eff } = tech;
   
   const chartData: ChartDataPoint[] = [];
@@ -40,6 +40,9 @@ export function generateDispatchData(
   
   // Determine if we're in a diesel replacement scenario
   const isDieselReplacement = !!input.diesel_params;
+  
+  // Default arbitrage windows if not specified
+  const arbChargeWindow = { start_hour: 0, end_hour: 5 }; // Early morning hours
   
   for (let hour = 0; hour < 24; hour++) {
     const load = load_profile[hour];
@@ -84,8 +87,8 @@ export function generateDispatchData(
     }
     
     // Charging logic: charge during early morning hours (0-5) for next day
-    const isChargeHour = hour >= 0 && hour <= 5;
-    if (isChargeHour && (sizing.arbitrage_required || isDieselReplacement)) {
+    const isChargeHour = hour >= arbChargeWindow.start_hour && hour <= arbChargeWindow.end_hour;
+    if (isChargeHour && (arbitrage_required || isDieselReplacement)) {
       const socPct = soc / 100;
       const roomLeft = max_soc - socPct;
       
