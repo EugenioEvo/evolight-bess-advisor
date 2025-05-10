@@ -1,8 +1,26 @@
+
 # Welcome to your Lovable project
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/2673f2cc-ab51-4423-817d-557afc027c22
+
+## Architecture
+
+``frontend/`` – Vite + React + shadcn  
+``supabase/functions/`` – Edge Functions (TypeScript)
+
+![Architecture Diagram](docs/arch.svg)
+
+### Dimensionamento BESS v2
+| Estratégia | Fórmula |
+|------------|---------|
+| Peak-Shaving | ΔP = alvo / %; E = ΔP × h / ηd |
+| Arbitragem | P = 0.8 × avg_pico; E = P × h / ηd |
+| Backup | P = carga crítica; E = P × h / ηd |
+
+Módulo indivisível Huawei 108 kW / 215 kWh.  
+Buffer 10 %. Mínimo 10 kW / 20 kWh.
 
 ## How can I edit this code?
 
