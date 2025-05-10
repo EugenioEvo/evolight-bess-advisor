@@ -24,7 +24,14 @@ export function MinDemandSection({ form }: MinDemandSectionProps) {
           <FormItem>
             <FormLabel>Demanda Mínima na Ponta (kW)</FormLabel>
             <FormControl>
-              <Input type="number" step="0.1" {...field} />
+              <Input 
+                type="number" 
+                step="0.1" 
+                placeholder="0"
+                {...field} 
+                onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -38,7 +45,14 @@ export function MinDemandSection({ form }: MinDemandSectionProps) {
           <FormItem>
             <FormLabel>Demanda Mínima Fora Ponta (kW)</FormLabel>
             <FormControl>
-              <Input type="number" step="0.1" {...field} />
+              <Input 
+                type="number" 
+                step="0.1" 
+                placeholder="0"
+                {...field} 
+                onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
