@@ -1,27 +1,32 @@
 
 /**
- * Helper utility functions for BESS simulation
+ * Utility functions for BESS simulation
  */
 
-// Helper functions for array calculations
-export const sum = (arr: number[]): number => arr.reduce((a, b) => a + b, 0);
+/**
+ * Calculate sum of array values
+ */
+export function sum(array: number[]): number {
+  return array.reduce((total, current) => total + current, 0);
+}
 
-export const range = (start: number, end: number): number[] => {
-  const result = [];
-  for (let i = start; i <= end; i++) {
-    result.push(i);
-  }
-  return result;
-};
+/**
+ * Generate an inclusive range of numbers
+ */
+export function range(start: number, end: number): number[] {
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
 
-// Calculates required number of modules based on power and energy requirements
-export const calculateModules = (
-  powerNeeded: number, 
-  energyNeeded: number, 
-  modulePowerKw: number, 
+/**
+ * Calculate the number of modules required based on power and energy needs
+ */
+export function calculateModules(
+  powerKw: number,
+  energyKwh: number,
+  modulePowerKw: number,
   moduleEnergyKwh: number
-): number => {
-  const modulesByPower = Math.ceil(powerNeeded / modulePowerKw);
-  const modulesByEnergy = Math.ceil(energyNeeded / moduleEnergyKwh);
-  return Math.max(modulesByPower, modulesByEnergy, 1); // At least 1 module
-};
+): number {
+  const byPower = Math.ceil(powerKw / modulePowerKw);
+  const byEnergy = Math.ceil(energyKwh / moduleEnergyKwh);
+  return Math.max(byPower, byEnergy);
+}
