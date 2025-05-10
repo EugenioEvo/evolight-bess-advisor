@@ -1,4 +1,3 @@
-
 import { BessSimulationResult } from "@/hooks/bessSimulation/types";
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { SimulationResponse } from "./types";

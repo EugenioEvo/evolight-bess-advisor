@@ -3,7 +3,7 @@
  * BESS module specifications and constants
  */
 
-// Module specifications
+// Huawei module specifications
 export const MODULE_POWER_KW = 108;
 export const MODULE_ENERGY_KWH = 215;
 

@@ -5,7 +5,7 @@
 
 export interface SimulationInput {
   load_profile: number[];            // kW por hora (0-23)
-  pv_profile: number[] | null;        // kW por hora (0-23), opcional
+  pv_profile: number[] | null;       // kW por hora (0-23), opcional
   tariff: {
     peak_start: number;              // ex.: 18
     peak_end: number;                // ex.: 21 (**inclusive**)
@@ -51,7 +51,7 @@ export interface ChartDataPoint {
   grid: number;
   charge: number;
   diesel: number;
-  negDis: number;
+  negDis: number;  // Important: must be negative for chart stacking
   soc: number;
   dieselRef?: number;
   pv?: number;
