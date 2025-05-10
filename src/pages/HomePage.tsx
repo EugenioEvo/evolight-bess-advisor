@@ -1,14 +1,37 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import FeatureCard from '@/components/FeatureCard';
 import { LineChart, FileText, BookOpen, BarChart3 } from 'lucide-react';
 
-const HomePage: React.FC = () => {
+function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container py-6 px-4 md:py-10">
+      
+      <main className="flex-1">
+        <section className="bg-gradient-to-b from-gray-50 to-white py-12 md:py-24">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
+                  Soluções em Armazenamento de Energia
+                </h1>
+                <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
+                  Dimensione, simule e analise sistemas de armazenamento de energia para sua empresa.
+                </p>
+              </div>
+              <div className="space-x-4">
+                <a href="/wizard" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                  Iniciar Wizard BESS
+                </a>
+                <a href="/simulador" className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                  Simulador Avançado
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section className="mb-10">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-evolight-navy mb-2">Bem-vindo ao BESS Analysis Suite</h1>
@@ -110,6 +133,6 @@ const HomePage: React.FC = () => {
       </footer>
     </div>
   );
-};
+}
 
 export default HomePage;
