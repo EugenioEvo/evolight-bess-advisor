@@ -2,44 +2,87 @@
 /**
  * Financial calculations for BESS simulation
  */
-import { SimulationInput } from "./types.ts";
+import { SimulationInput, ChartDataPoint } from "./types.ts";
 import { sum } from "./utils.ts";
 
 /**
  * Calculate annual savings based on simulation results
  */
-export function calculateAnnualSavings(input: SimulationInput, peakShavingPower: number): number {
+export function calculateAnnualSavings(
+  input: SimulationInput, 
+  peakShavingPowerKw: number,
+  arbitrageReqs?: { energyKwh: number }, // Optional arbitrage requirements
+  bessEnergyKwh?: number,               // Optional BESS energy capacity
+  chargeEff?: number,                    // Optional charging efficiency
+  dischargeEff?: number,                 // Optional discharging efficiency
+  chartData?: ChartDataPoint[]           // Optional chart data for detailed calculations
+): number {
   const { tariff, load_profile, pv_profile } = input;
   const { te_peak, tusd_peak, te_off, tusd_off, tusd_demand } = tariff;
+  const { pv_optim_required, peak_shaving_required, arbitrage_required } = input.sizing;
+  const operationalDays = input.diesel_params?.dieselOperationalDays || 365; // Use consistent operational days
   
   let annualSavings = 0;
   
-  // If we have a demand charge (group A)
-  if (tusd_demand > 0 && peakShavingPower > 0) {
+  // 1. If we have a demand charge (group A)
+  if (tusd_demand > 0 && peakShavingPowerKw > 0 && peak_shaving_required) {
     // Annual demand charge savings
-    annualSavings += peakShavingPower * tusd_demand * 12;
-    console.log(`Demand savings: ${peakShavingPower} kW * ${tusd_demand} R$/kW·month * 12 months = ${peakShavingPower * tusd_demand * 12} R$`);
+    annualSavings += peakShavingPowerKw * tusd_demand * 12;
+    console.log(`Demand savings: ${peakShavingPowerKw} kW * ${tusd_demand} R$/kW·month * 12 months = ${peakShavingPowerKw * tusd_demand * 12} R$`);
   }
   
-  // If we have PV, calculate energy saved
-  if (pv_profile && pv_profile.some(v => v > 0)) {
-    const dailyPvEnergy = sum(pv_profile);
-    const dailyLoadEnergy = sum(load_profile);
-    const usablePvEnergy = Math.min(dailyPvEnergy, dailyLoadEnergy);
+  // 2. If we have PV, calculate energy saved
+  if (pv_optim_required && pv_profile && pv_profile.some(v => v > 0)) {
+    // Calculate hourly energy costs with and without PV
+    let dailyGridEnergyCostWithoutPv = 0;
+    let dailyGridEnergyCostWithPv = 0;
     
-    // Calculate weighted average energy price
-    const peakHours = input.tariff.peak_end - input.tariff.peak_start + 1;
-    const offPeakHours = 24 - peakHours;
-    const avgEnergyPrice = ((te_peak + tusd_peak) * peakHours + 
-                           (te_off + tusd_off) * offPeakHours) / 24;
+    for (let hour = 0; hour < 24; hour++) {
+      const isPeakHour = hour >= input.tariff.peak_start && hour <= input.tariff.peak_end;
+      const hourlyTariff = isPeakHour ? (te_peak + tusd_peak) : (te_off + tusd_off);
+      
+      dailyGridEnergyCostWithoutPv += Math.max(0, load_profile[hour]) * hourlyTariff;
+      dailyGridEnergyCostWithPv += Math.max(0, load_profile[hour] - (pv_profile[hour] || 0)) * hourlyTariff;
+    }
     
-    // Annual energy savings (assuming 365 days)
-    const annualEnergyKWh = usablePvEnergy * 365;
-    annualSavings += annualEnergyKWh * avgEnergyPrice;
+    const dailyPvSavings = dailyGridEnergyCostWithoutPv - dailyGridEnergyCostWithPv;
+    annualSavings += dailyPvSavings * operationalDays;
     
-    console.log(`Energy savings: ${annualEnergyKWh} kWh * ${avgEnergyPrice} R$/kWh = ${annualEnergyKWh * avgEnergyPrice} R$`);
+    console.log(`PV energy savings: ${dailyPvSavings.toFixed(2)} R$/day * ${operationalDays} days = ${(dailyPvSavings * operationalDays).toFixed(2)} R$`);
   }
   
+  // 3. Arbitrage Savings
+  if (arbitrage_required && arbitrageReqs && bessEnergyKwh && chargeEff && dischargeEff) {
+    const roundTripEff = chargeEff * dischargeEff;
+    const costToChargeKwh = te_off + tusd_off; // Assuming charging happens at off-peak
+    const valueOfDischargedKwh = te_peak + tusd_peak; // Assuming discharging at peak
+    
+    // Daily energy cycled (limited by BESS capacity and strategy)
+    const dailyArbitrageEnergy = Math.min(
+      arbitrageReqs.energyKwh, 
+      bessEnergyKwh * 0.8 // Limiting to 80% of capacity as a practical constraint
+    );
+    
+    // Profit per kWh effectively discharged for arbitrage
+    const profitPerEffectiveKwhArbitrage = valueOfDischargedKwh - (costToChargeKwh / roundTripEff);
+    
+    if (profitPerEffectiveKwhArbitrage > 0) {
+      const dailyArbitrageSavings = dailyArbitrageEnergy * profitPerEffectiveKwhArbitrage;
+      annualSavings += dailyArbitrageSavings * operationalDays;
+      
+      console.log("Arbitrage Savings:", {
+        dailyArbitrageEnergy: dailyArbitrageEnergy.toFixed(2) + " kWh",
+        costToChargeKwh: costToChargeKwh.toFixed(2) + " R$/kWh",
+        valueOfDischargedKwh: valueOfDischargedKwh.toFixed(2) + " R$/kWh",
+        roundTripEff: roundTripEff.toFixed(2),
+        profitPerEffectiveKwhArbitrage: profitPerEffectiveKwhArbitrage.toFixed(2) + " R$/kWh",
+        dailyArbitrageSavings: dailyArbitrageSavings.toFixed(2) + " R$",
+        annualArbitrageSavings: (dailyArbitrageSavings * operationalDays).toFixed(2) + " R$"
+      });
+    }
+  }
+  
+  console.log(`Total annual savings: ${annualSavings.toFixed(2)} R$`);
   return annualSavings;
 }
 
@@ -80,11 +123,11 @@ export function calculateDieselReplacementSavings(
   const annualCostAvoided = annualConsumptionAvoided * dieselCostPerLiter; // R$/year
   const annualCO2Avoided = annualConsumptionAvoided * dieselCO2EmissionFactor; // kgCO2/year
   
-  // Estimate BESS operational costs for diesel replacement (simplified)
-  // Assuming grid electricity cost for charging and maintenance
+  // Estimate BESS operational costs for diesel replacement
   const { te_off, tusd_off } = input.tariff;
   const gridCostOffpeak = te_off + tusd_off; // R$/kWh
-  const chargingCost = annualDieselEnergyAvoided * gridCostOffpeak; // R$/year
+  const roundTripEff = (input.tech.charge_eff || 0.95) * (input.tech.discharge_eff || 0.95);
+  const chargingCost = annualDieselEnergyAvoided * (gridCostOffpeak / roundTripEff); // R$/year
   const maintenanceCost = annualDieselEnergyAvoided * 0.01; // R$/year (1% of energy value)
   const bessOpCost = chargingCost + maintenanceCost; // R$/year
   
