@@ -36,7 +36,6 @@ export function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
   }
   
   // Calculate chargeEff and dischargeEff based on roundtrip efficiency
-  // Using individual efficiencies explicitly defined in the form
   const chargeEff = formValues.chargeEff ? formValues.chargeEff / 100 : 0.95;
   const dischargeEff = formValues.dischargeEff ? formValues.dischargeEff / 100 : 0.95;
   const roundEff = chargeEff * dischargeEff;
@@ -66,7 +65,7 @@ export function mapFormValuesToSimInput(formValues: SimuladorFormValues) {
              formValues.peakShavingTarget || 100,
     useARB: formValues.useArbitrage || false,
     
-    // BESS parameters - using individual efficiencies for charge and discharge
+    // BESS parameters
     modulePower: 108,
     moduleEnergy: 215,
     chargeEff,

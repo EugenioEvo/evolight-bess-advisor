@@ -5,11 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PowerChart } from './PowerChart';
 import { SocChart } from './SocChart';
 import { CashFlowChart } from './CashFlowChart';
-import { EnergyDispatchVisualization } from './dispatch/EnergyDispatchVisualization';
 import { generatePowerData } from './data-generators/powerDataGenerator';
 import { generateSoCData } from './data-generators/socDataGenerator';
 import { generateCashFlowData } from './data-generators/cashFlowDataGenerator';
-import { generateEnergyDispatchData } from './data-generators/energyDispatchDataGenerator';
 import { SimuladorFormValues } from "@/schemas/simuladorSchema";
 import { BessDispatchPoint } from '@/hooks/bessSimulation/types';
 
@@ -26,12 +24,8 @@ interface ChartTabsProps {
 
 export function ChartTabs({ results, formValues }: ChartTabsProps) {
   console.log("Chart Tabs Results:", results);
-  // Check if we have real dispatch data
-  const hasRealDispatchData = results.dispatch24h && 
-                              Array.isArray(results.dispatch24h) && 
-                              results.dispatch24h.length > 0;
   
-  // Ensure we have valid values from form or results - removed limitation to max values
+  // Ensure we have valid values from form or results
   const bessPower = typeof formValues.bessPowerKw === 'number' && formValues.bessPowerKw > 0 
     ? formValues.bessPowerKw 
     : typeof results.calculatedPowerKw === 'number' && results.calculatedPowerKw > 0
@@ -44,7 +38,7 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
       ? results.calculatedEnergyKwh
       : 215; // Default fallback value if both sources are invalid
   
-  // Generate power data with validated values - removed any capacity constraints
+  // Generate power data with validated values
   const powerData = generatePowerData(
     formValues, 
     bessCapacity, 
@@ -63,51 +57,13 @@ export function ChartTabs({ results, formValues }: ChartTabsProps) {
     annualSavings
   );
   
-  // Use real dispatch data if available, or generate synthetic data
-  const dispatchData = useMemo(() => {
-    if (hasRealDispatchData) {
-      console.log("Using real dispatch data:", results.dispatch24h);
-      return results.dispatch24h!.map(point => ({
-        hour: point.hour as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23,
-        load: point.load,
-        pv: point.pv,
-        diesel: point.diesel,
-        charge: point.charge,
-        discharge: point.discharge,
-        grid: point.grid,
-        soc: point.soc,
-        dieselRef: point.dieselRef,
-      }));
-    } else {
-      console.log("Generating synthetic dispatch data");
-      return generateEnergyDispatchData(powerData, socData);
-    }
-  }, [hasRealDispatchData, results.dispatch24h, powerData, socData]);
-  
-  // Add more debug logging
-  console.log("Dispatch data for chart:", dispatchData);
-  
   return (
-    <Tabs defaultValue="dispatch">
-      <TabsList className="grid grid-cols-4 mb-4">
-        <TabsTrigger value="dispatch">Despacho</TabsTrigger>
+    <Tabs defaultValue="power">
+      <TabsList className="grid grid-cols-3 mb-4">
         <TabsTrigger value="power">Perfil de Potência</TabsTrigger>
         <TabsTrigger value="soc">Estado de Carga</TabsTrigger>
         <TabsTrigger value="cashflow">Fluxo de Caixa</TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="dispatch">
-        <Card className="h-[450px]">
-          <CardContent className="p-4 h-full">
-            <EnergyDispatchVisualization 
-              data={dispatchData} 
-              highlightPeakHours={true}
-              peakStartHour={formValues.peakStartHour}
-              peakEndHour={formValues.peakEndHour}
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
       
       <TabsContent value="power">
         <Card className="h-[400px]">
