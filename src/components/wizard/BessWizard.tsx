@@ -12,7 +12,7 @@ export function BessWizard() {
   const { simulationId, action } = useParams();
   const [showWizard, setShowWizard] = useState(false);
   
-  // Determinar se devemos mostrar o wizard ou a página inicial
+  // Determine if we should show the wizard or home page
   useEffect(() => {
     if (simulationId === 'new' || simulationId || action === 'template') {
       setShowWizard(true);
@@ -21,17 +21,17 @@ export function BessWizard() {
     }
   }, [simulationId, action]);
   
-  // Carregar template se especificado
+  // Load template if specified
   useEffect(() => {
     if (action === 'template' && simulationId) {
-      // Aqui carregaríamos os dados do template
+      // Here we would load template data
       toast.info('Template carregado', {
         description: `Configurando simulação com base no caso de uso: ${simulationId}`
       });
     }
   }, [action, simulationId]);
   
-  // Se não estamos no modo wizard, mostrar a página inicial
+  // If not in wizard mode, show the home page
   if (!showWizard) {
     return <WizardHome />;
   }
