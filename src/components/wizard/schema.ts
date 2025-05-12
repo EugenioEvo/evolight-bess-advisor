@@ -45,8 +45,11 @@ export const wizardSchema = z.object({
   profileType: z.enum(['daytime', 'nighttime', 'constant']).optional(),
   
   // PV profile
-  pvProfileMethod: z.enum(['auto', 'upload']).default('auto'),
+  pvProfileMethod: z.enum(['auto', 'hourly', 'upload']).default('auto'),
   hourlyPvKw: z.array(z.number()).default(Array(24).fill(0)),
+  
+  // Project information
+  projectName: z.string().optional().default('Nova Simulação BESS')
 });
 
 export type WizardFormValues = z.infer<typeof wizardSchema>;

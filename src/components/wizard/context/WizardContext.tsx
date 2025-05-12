@@ -22,7 +22,7 @@ interface WizardContextType {
   isSimulating: boolean;
   isSaving: boolean;
   simulationResults: any;
-  runSimulation: () => Promise<void>;
+  runSimulation: () => Promise<any>;
   saveProgress: () => Promise<void>;
   loadSavedSimulation: (id: string) => Promise<void>;
   goToStep: (step: WizardStep) => void;
@@ -79,6 +79,9 @@ const defaultValues: WizardFormValues = {
   // PV profile
   pvProfileMethod: 'auto',
   hourlyPvKw: Array(24).fill(0),
+  
+  // Project name (added this to fix the error)
+  projectName: 'Nova Simulação BESS'
 };
 
 export const WizardContext = createContext<WizardContextType>({} as WizardContextType);
@@ -102,7 +105,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     mode: 'onChange',
   });
   
-  const { runSimulation, isSimulating, simulationResult } = useBessSimulation();
+  const { runSimulation: runBessSimulation, isSimulating, simulationResult } = useBessSimulation();
   
   // Check for form errors on field change
   useEffect(() => {
@@ -190,7 +193,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       const formData = methods.getValues();
       validateStepData(formData, 'profile');
       
-      const result = await runSimulation(formData);
+      const result = await runBessSimulation(formData);
       
       // After simulation, move to results step and save the simulation
       setCurrentStep('results');
@@ -202,6 +205,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       toast.error('Erro na simulação', { 
         description: 'Ocorreu um erro ao processar a simulação. Por favor, verifique os dados e tente novamente.'
       });
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -231,27 +235,28 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       const formData = methods.getValues();
       const simulationName = formData.projectName || 'Nova Simulação';
       
-      // Se já temos um ID de simulação, atualize; caso contrário, insira
+      // If we already have a simulation ID, update it
       if (currentSimulationId) {
         const { error } = await supabase
           .from('saved_simulations')
           .update({ 
-            input_values: formData,
-            results: simulationResult,
+            input_values: formData as any,
+            results: simulationResult as any,
             updated_at: new Date().toISOString()
           })
           .eq('id', currentSimulationId);
         
         if (error) throw error;
       } else {
+        // Otherwise create a new simulation
         const { data, error } = await supabase
           .from('saved_simulations')
           .insert({ 
             name: simulationName,
             description: `Simulação de ${formData.siteType || 'BESS'}`,
             user_id: session.user.id,
-            input_values: formData,
-            results: simulationResult
+            input_values: formData as any,
+            results: simulationResult as any
           })
           .select();
         
@@ -300,8 +305,10 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         setCurrentSimulationId(data.id);
         
-        // Reset the form with saved values
-        methods.reset(data.input_values);
+        // Reset the form with saved values - make sure to cast to the correct type
+        // because supabase returns the data as a generic JSON type
+        const inputValues = data.input_values as unknown as WizardFormValues;
+        methods.reset(inputValues);
         
         // If we have results, go to results step, otherwise go to the first step
         if (data.results) {
@@ -436,7 +443,6 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 export const useWizard = () => useContext(WizardContext);
 
 // Adicionar propriedade de nome do projeto ao schema
-// Isso é feito aqui para manter a compatibilidade com o código existente
 wizardSchema.extend({
   projectName: z.string().optional().default('Nova Simulação BESS')
 });
