@@ -34,12 +34,7 @@ function App() {
                 </AuthGuard>
               }
             />
-            <Route
-              path="/wizard"
-              element={
-                <WizardPage />
-              }
-            />
+            <Route path="/wizard/*" element={<WizardPage />} />
             <Route path="/academia" element={<AcademiaPage />} />
             <Route path="/documentacao" element={<DocumentacaoPage />} />
             <Route path="/sobre-evolight" element={<SobreEvolightPage />} />

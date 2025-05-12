@@ -1,21 +1,44 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WizardProvider } from './context/WizardContext';
 import { WizardNavigation } from './navigation/WizardNavigation';
 import { WizardSteps } from './navigation/WizardSteps';
 import { WizardContent } from './WizardContent';
+import { WizardHome } from './WizardHome';
+import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export function BessWizard() {
+  const { simulationId, action } = useParams();
+  const [showWizard, setShowWizard] = useState(false);
+  
+  // Determinar se devemos mostrar o wizard ou a página inicial
+  useEffect(() => {
+    if (simulationId === 'new' || simulationId || action === 'template') {
+      setShowWizard(true);
+    } else {
+      setShowWizard(false);
+    }
+  }, [simulationId, action]);
+  
+  // Carregar template se especificado
+  useEffect(() => {
+    if (action === 'template' && simulationId) {
+      // Aqui carregaríamos os dados do template
+      toast.info('Template carregado', {
+        description: `Configurando simulação com base no caso de uso: ${simulationId}`
+      });
+    }
+  }, [action, simulationId]);
+  
+  // Se não estamos no modo wizard, mostrar a página inicial
+  if (!showWizard) {
+    return <WizardHome />;
+  }
+  
   return (
     <WizardProvider>
       <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold">BESS Advisor</h1>
-          <p className="text-muted-foreground">
-            Configure seu sistema de armazenamento de energia de forma simples e intuitiva.
-          </p>
-        </div>
-        
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Sidebar with steps on larger screens */}
           <div className="hidden lg:block lg:col-span-3">

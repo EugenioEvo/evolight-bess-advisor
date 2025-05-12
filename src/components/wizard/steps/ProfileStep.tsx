@@ -8,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { BarChartIcon, Upload, Sun, LineChart, Clock } from 'lucide-react';
 import { HourlyDemandInput } from '@/components/simulador/HourlyDemandInput';
 import { ConsumptionPatternSelector } from '../ui/ConsumptionPatternSelector';
+import { ProfilePreviewChart } from '../charts/ProfilePreviewChart';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { WizardProgress } from '../ui/WizardProgress';
 
 export function ProfileStep() {
   const { setCanProceed } = useWizard();
@@ -20,6 +22,20 @@ export function ProfileStep() {
   const profileEntryMethod = watch('profileEntryMethod');
   const hourlyDemandKw = watch('hourlyDemandKw');
   const hasPv = watch('hasPv');
+  const pvPowerKwp = watch('pvPowerKwp');
+  const pvProfileMethod = watch('pvProfileMethod');
+  const hourlyPvKw = watch('hourlyPvKw');
+  const peakStartHour = watch('peakStartHour');
+  const peakEndHour = watch('peakEndHour');
+  
+  // Gerar perfil solar automaticamente quando pvProfileMethod for 'auto'
+  useEffect(() => {
+    if (hasPv && pvProfileMethod === 'auto' && pvPowerKwp > 0) {
+      // Perfil de geração simplificado baseado no kWp
+      const generatedPvProfile = generateSolarProfile(pvPowerKwp);
+      setValue('hourlyPvKw', generatedPvProfile);
+    }
+  }, [hasPv, pvProfileMethod, pvPowerKwp, setValue]);
   
   // Check if profile data is valid to proceed
   useEffect(() => {
@@ -45,6 +61,8 @@ export function ProfileStep() {
         </p>
       </div>
       
+      <WizardProgress />
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -64,7 +82,7 @@ export function ProfileStep() {
                 <FormControl>
                   <RadioGroup
                     value={field.value}
-                    onValueChange={(value) => {
+                    onValueChange={(value: string) => {
                       field.onChange(value);
                       // If switching to simple, generate default data
                       if (value === 'simple') {
@@ -107,7 +125,7 @@ export function ProfileStep() {
           <div className="mt-6">
             {profileEntryMethod === 'simple' && (
               <ConsumptionPatternSelector
-                onSelect={(pattern) => {
+                onSelect={(pattern: string) => {
                   // Ensure pattern is one of the allowed types
                   const validPattern = pattern as "daytime" | "nighttime" | "constant";
                   setValue('profileType', validPattern);
@@ -170,6 +188,12 @@ export function ProfileStep() {
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="hourly" id="hourlyPv" />
+                        <Label htmlFor="hourlyPv">
+                          Informar valores hora a hora
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="upload" id="uploadPv" />
                         <Label htmlFor="uploadPv">
                           Upload de arquivo CSV com dados reais
@@ -182,7 +206,7 @@ export function ProfileStep() {
             />
             
             <div className="mt-6">
-              {watch('pvProfileMethod') === 'auto' && (
+              {pvProfileMethod === 'auto' && (
                 <div className="p-4 bg-yellow-50 rounded-lg">
                   <div className="flex items-start gap-3">
                     <Sun className="h-6 w-6 text-yellow-600 mt-1" />
@@ -191,15 +215,23 @@ export function ProfileStep() {
                         Geração Solar Estimada
                       </p>
                       <p className="text-sm text-yellow-700 mt-1">
-                        Com {watch('pvPowerKwp')} kWp e insolação média de 4,5 kWh/kWp/dia, 
-                        sua geração média diária será de aproximadamente {(watch('pvPowerKwp') * 4.5).toFixed(0)} kWh.
+                        Com {pvPowerKwp} kWp e insolação média de 4,5 kWh/kWp/dia, 
+                        sua geração média diária será de aproximadamente {(pvPowerKwp * 4.5).toFixed(0)} kWh.
                       </p>
                     </div>
                   </div>
                 </div>
               )}
               
-              {watch('pvProfileMethod') === 'upload' && (
+              {pvProfileMethod === 'hourly' && (
+                <HourlyDemandInput 
+                  values={hourlyPvKw}
+                  onChange={(values) => setValue('hourlyPvKw', values)}
+                  className="h-80"
+                />
+              )}
+              
+              {pvProfileMethod === 'upload' && (
                 <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-lg">
                   <Upload className="h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-sm text-muted-foreground mb-4">
@@ -217,7 +249,7 @@ export function ProfileStep() {
       )}
       
       {/* Chart Preview */}
-      <Card className="bg-muted/40">
+      <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">Prévia da Curva de Carga</CardTitle>
           <CardDescription>
@@ -225,12 +257,21 @@ export function ProfileStep() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Chart preview would go here */}
-          <div className="h-48 flex items-center justify-center bg-muted rounded-md">
-            <p className="text-sm text-muted-foreground">
-              Gráfico de previsualização (a ser implementado)
-            </p>
-          </div>
+          <ProfilePreviewChart 
+            hourlyDemandKw={hourlyDemandKw} 
+            hourlyPvKw={hasPv ? hourlyPvKw : undefined}
+            peakStartHour={peakStartHour}
+            peakEndHour={peakEndHour}
+            showPeakPeriod={true}
+            height={250}
+          />
+          
+          <Alert className="mt-4 bg-blue-50 border-blue-100">
+            <AlertDescription className="text-sm text-blue-700">
+              O dimensionamento do sistema BESS será otimizado com base neste perfil energético.
+              Para resultados mais precisos, verifique se os dados refletem seu padrão típico de consumo.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     </div>
@@ -257,4 +298,17 @@ function generatePattern(pattern: "daytime" | "nighttime" | "constant"): number[
     default:
       return Array(24).fill(0);
   }
+}
+
+// Helper function to generate a simple solar profile based on installed capacity
+function generateSolarProfile(kWp: number): number[] {
+  // Simplified solar generation curve (bell curve)
+  const baseProfile = [
+    0, 0, 0, 0, 0, 0.05, 0.1, 0.3, 
+    0.5, 0.7, 0.85, 0.95, 1.0, 0.95, 0.85, 
+    0.7, 0.5, 0.3, 0.1, 0.05, 0, 0, 0, 0
+  ];
+  
+  // Scale by installed capacity, assuming AC/DC ratio of 0.8
+  return baseProfile.map(value => value * kWp * 0.8);
 }
