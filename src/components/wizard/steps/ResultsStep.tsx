@@ -1,13 +1,14 @@
-
 import React, { useEffect } from 'react';
 import { useWizard } from '../context/WizardContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Battery, Download, BarChart3, ListChecks, Bolt, Sparkles, Clock, DollarSign } from 'lucide-react';
+import { Download, BarChart3, ListChecks, DollarSign, Battery, Bolt, Sparkles, Clock } from 'lucide-react';
 import { EnergyDispatchVisualization } from '@/components/simulador/results/charts/dispatch/EnergyDispatchVisualization';
 import { useFormContext } from 'react-hook-form';
+import { BessSizingSection } from './results/BessSizingSection';
+import { FinancialResultsSection } from './results/FinancialResultsSection';
 
 export function ResultsStep() {
   const { simulationResults, runSimulation, isLoading } = useWizard();
@@ -60,71 +61,14 @@ export function ResultsStep() {
         </Button>
       </div>
       
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground">Módulos BESS</span>
-                <div className="text-2xl font-bold">{modules}</div>
-                <span className="text-xs text-muted-foreground">Huawei LUNA2000</span>
-              </div>
-              <div className="p-3 rounded-full bg-primary/10">
-                <Battery className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground">Potência</span>
-                <div className="text-2xl font-bold">{bessPowerKw} kW</div>
-                <span className="text-xs text-muted-foreground">Máxima descarga</span>
-              </div>
-              <div className="p-3 rounded-full bg-orange-100">
-                <Bolt className="h-6 w-6 text-orange-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground">Capacidade</span>
-                <div className="text-2xl font-bold">{bessEnergyKwh} kWh</div>
-                <span className="text-xs text-muted-foreground">Energia armazenada</span>
-              </div>
-              <div className="p-3 rounded-full bg-blue-100">
-                <Clock className="h-6 w-6 text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground">Economia Anual</span>
-                <div className="text-2xl font-bold">R$ {Math.round(annualSavings).toLocaleString()}</div>
-                <span className="text-xs text-muted-foreground">Payback em {paybackYears} anos</span>
-              </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <DollarSign className="h-6 w-6 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Dimensioning and Financial Overview */}
+      <div className="grid grid-cols-1 gap-6">
+        <BessSizingSection />
+        <FinancialResultsSection />
       </div>
       
       {/* Detailed Analysis Tabs */}
-      <Tabs defaultValue="dispatch">
+      <Tabs defaultValue="dispatch" className="mt-8">
         <TabsList>
           <TabsTrigger value="dispatch" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
