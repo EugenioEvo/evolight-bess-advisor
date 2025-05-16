@@ -48,7 +48,7 @@ export function FinancialResultsSection() {
       }
       
       if (typeof annualEscalation === 'number') {
-        setValue('annualEscalation', annualEscalation);
+        setValue('annualTariffAdjustment', annualEscalation);
       }
     }
     setShowAnalysis(false);

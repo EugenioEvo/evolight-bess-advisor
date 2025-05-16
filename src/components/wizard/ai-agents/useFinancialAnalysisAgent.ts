@@ -74,6 +74,9 @@ export const useFinancialAnalysisAgent = () => {
       const idealHorizon = formValues.businessModel === 'turnkey' ? 10 : 7;
       const adjustedHorizon = Math.max(Math.min(formValues.horizonYears, 15), 5);
 
+      // Get annual escalation from formValues or default to 5
+      const currentAnnualEscalation = formValues.annualTariffAdjustment || 0;
+
       // Generate optimization suggestions
       const optimizationSuggestions = [];
       
@@ -99,10 +102,10 @@ export const useFinancialAnalysisAgent = () => {
         });
       }
       
-      if (!formValues.annualEscalation) {
+      if (!currentAnnualEscalation || currentAnnualEscalation < 3) {
         optimizationSuggestions.push({
-          field: 'annualEscalation',
-          currentValue: 0,
+          field: 'annualTariffAdjustment',
+          currentValue: currentAnnualEscalation,
           suggestedValue: 5,
           impact: 'Incluir escalação anual nas tarifas melhora o retorno projetado'
         });
