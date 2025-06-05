@@ -61,8 +61,8 @@ export interface PeakAnalysisResult {
 }
 
 export interface BessSizeResult {
-  final_power_kw: number;
-  final_energy_kwh: number;
+  calculated_power_kw: number;
+  calculated_energy_kwh: number;
 }
 
 export interface BackupResult {

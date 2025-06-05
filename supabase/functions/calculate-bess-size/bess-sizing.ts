@@ -89,15 +89,15 @@ export function calculateBessSize(
     energy_kwh,
     sizing_params?.sizing_buffer_factor
   );
-  
+
   // Apply indivisible module rule
   const finalResult = applyIndivisibleModuleRule(
-    bufferedResult.final_power_kw,
-    bufferedResult.final_energy_kwh
+    bufferedResult.calculated_power_kw,
+    bufferedResult.calculated_energy_kwh
   );
-  
+
   return {
-    calculated_power_kw: finalResult.final_power_kw,
-    calculated_energy_kwh: finalResult.final_energy_kwh
+    calculated_power_kw: finalResult.calculated_power_kw,
+    calculated_energy_kwh: finalResult.calculated_energy_kwh
   };
 }
