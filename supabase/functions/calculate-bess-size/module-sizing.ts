@@ -24,15 +24,19 @@ export function applyBufferAndMinimumSizes(
   let final_energy_kwh = required_energy_kwh * buffer;
 
   // Ensure minimum sizes for practical deployments
-  if (final_power_kw <= 0 || final_energy_kwh <= 0) {
-    final_power_kw = Math.max(final_power_kw, 10.0); // Minimum 10 kW
-    final_energy_kwh = Math.max(final_energy_kwh, 20.0); // Minimum 20 kWh
-    console.log("Applied minimum sizes - power: 10 kW, energy: 20 kWh");
+  if (final_power_kw < 10.0) {
+    final_power_kw = 10.0;
   }
-  
+  if (final_energy_kwh < 20.0) {
+    final_energy_kwh = 20.0;
+  }
+
   console.log("Final sizing after buffer:", { final_power_kw, final_energy_kwh });
-  
-  return { final_power_kw, final_energy_kwh };
+
+  return {
+    calculated_power_kw: final_power_kw,
+    calculated_energy_kwh: final_energy_kwh
+  };
 }
 
 /**
@@ -66,8 +70,8 @@ export function applyIndivisibleModuleRule(
     adjusted_energy_kwh
   });
   
-  return { 
-    final_power_kw: adjusted_power_kw, 
-    final_energy_kwh: adjusted_energy_kwh 
+  return {
+    calculated_power_kw: adjusted_power_kw,
+    calculated_energy_kwh: adjusted_energy_kwh
   };
 }
